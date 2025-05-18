@@ -23,7 +23,7 @@
 	warning_low_pressure = 30
 	hazard_low_pressure = 10
 
-	examine_color = "#C2AE95"s
+	examine_color = "#C2AE95"
 
 /datum/species/human/offworlder/get_species_tally(var/mob/living/carbon/human/H)
 
