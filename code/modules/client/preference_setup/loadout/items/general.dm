@@ -274,6 +274,7 @@
 	banners["banner, Visegrad"] = /obj/item/flag/visegrad
 	banners["banner, Burzsia"] = /obj/item/flag/burzsia
 	banners["banner, HPS Narrows"] = /obj/item/flag/narrows
+	banners["banner, Orepit"] = /obj/item/flag/orepit
 	gear_tweaks += new /datum/gear_tweak/path(banners)
 
 /datum/gear/standard
@@ -375,6 +376,7 @@
 	flags["flag, Visegrad"] = /obj/item/flag/visegrad/l
 	flags["flag, Burzsia"] = /obj/item/flag/burzsia/l
 	flags["flag, HPS Narrows"] = /obj/item/flag/narrows/l
+	flags["flag, Orepit"] = /obj/item/flag/orepit/l
 	gear_tweaks += new /datum/gear_tweak/path(flags)
 
 /datum/gear/towel

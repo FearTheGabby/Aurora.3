@@ -4011,3 +4011,41 @@
 
 /obj/structure/sign/flag/narrows/large/west/Initialize(mapload)
 	. = ..(mapload, WEST)
+
+// Orepit
+/obj/item/flag/orepit
+	name = "\improper Orepit flag"
+	desc = "The flag of Orepit, a nation-state which has recently undergone much modernization at the hands of the Church of the Trinary Perfection."
+	desc_extended = "The elements of the flag represent the unique geological nature of the planet itself, along with the recent integration of the Church of the Trinary Perfection, with the green representing the verdant green of the northern hemisphere, the yellow representing the sprawling desert, the red circle representing the expansion of the city of Providence, the blue representing the staunchly-guarded water underground, and the black circles representing the Twenty Parishes."
+	flag_path = "orepit"
+	flag_structure = /obj/structure/sign/flag/orepit
+
+/obj/structure/sign/flag/orepit
+	name = "\improper Orepit flag"
+	desc = "The flag of Orepit, a nation-state which has recently undergone much modernization at the hands of the Church of the Trinary Perfection."
+	desc_extended = "The elements of the flag represent the unique geological nature of the planet itself, along with the recent integration of the Church of the Trinary Perfection, with the green representing the verdant green of the northern hemisphere, the yellow representing the sprawling desert, the red circle representing the expansion of the city of Providence, the blue representing the staunchly-guarded water underground, and the black circles representing the Twenty Parishes."
+	icon_state = "orepit"
+	flag_item = /obj/item/flag/orepit
+
+/obj/item/flag/orepit/l
+	name = "\improper large Orepit flag"
+	flag_path = "orepit"
+	flag_structure = /obj/structure/sign/flag/orepit/large
+
+/obj/structure/sign/flag/orepit/large
+	icon_state = "orepit_l"
+	flag_path = "orepit"
+	flag_size = TRUE
+	flag_item = /obj/item/flag/orepit/l
+
+/obj/structure/sign/flag/orepit/large/north/Initialize(mapload)
+	. = ..(mapload, NORTH)
+
+/obj/structure/sign/flag/orepit/large/south/Initialize(mapload)
+	. = ..(mapload, SOUTH)
+
+/obj/structure/sign/flag/orepit/large/east/Initialize(mapload)
+	. = ..(mapload, EAST)
+
+/obj/structure/sign/flag/orepit/large/west/Initialize(mapload)
+	. = ..(mapload, WEST)
