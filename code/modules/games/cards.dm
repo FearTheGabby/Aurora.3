@@ -240,6 +240,10 @@
 	. = ..()
 	if(use_check_and_message(user))
 		return
+<<<<<<< HEAD
+=======
+
+>>>>>>> 8836f3afb2632d60887585c5db3cfc5cf37058ab
 	var/list/newcards = list()
 	while(length(cards))
 		var/datum/playingcard/P = pick(cards)
