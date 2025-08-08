@@ -463,6 +463,24 @@
 	desc = "Ship Weapons"
 	region = ACCESS_REGION_SUPPLY
 
+#define ACCESS_SPARK 76
+/datum/access/spark
+	id = ACCESS_SPARK
+	desc = "Spark Shuttle"
+	region = ACCESS_REGION_COMMAND
+
+#define ACCESS_QUARK 77
+/datum/access/quark
+	id = ACCESS_QUARK
+	desc = "Quark Shuttle"
+	region = ACCESS_REGION_COMMAND
+
+#define ACCESS_CANARY 78
+/datum/access/canary
+	id = ACCESS_CANARY
+	desc = "Canary Shuttle"
+	region = ACCESS_REGION_COMMAND
+
 /******************
 * Central Command *
 ******************/
@@ -848,3 +866,23 @@
 /datum/access/nuclear_missile_silo_access_high
 	id = ACCESS_NUCLEAR_MISSILE_SILO_HIGH
 	desc = "Nuclear Missile Silo Access High Security"
+
+/datum/access/enviro_testing_facility_access_control
+	id = 249
+	desc = "Env-Test Facility Zoya, Control Access"
+
+/datum/access/enviro_testing_facility_access_medres
+	id = 250
+	desc = "Env-Test Facility Zoya, Medical-Research Access"
+
+/datum/access/enviro_testing_facility_access_engops
+	id = 251
+	desc = "Env-Test Facility Zoya, Engineering-Operations Access"
+
+/datum/access/enviro_testing_facility_access_sec
+	id = 252
+	desc = "Env-Test Facility Zoya, Security Access"
+
+#define ACCESS_HIMEO_PATROL_SHIP 253
+	id = ACCESS_HIMEO_PATROL_SHIP
+	desc = "Himean Military Patrol Vessel"

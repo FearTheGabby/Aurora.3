@@ -66,9 +66,6 @@ GLOBAL_LIST_INIT(whitelisted_species, list(SPECIES_HUMAN))
 /// A list of ALL playable species, whitelisted, latejoin or otherwise.
 GLOBAL_LIST_EMPTY(playable_species)
 
-/// Poster designs (/datum/poster).
-GLOBAL_LIST_EMPTY(poster_designs)
-
 /// All uplinks.
 GLOBAL_LIST_EMPTY_TYPED(world_uplinks, /obj/item/device/uplink)
 
@@ -114,6 +111,9 @@ GLOBAL_LIST_INIT(headsetlist, list("Nothing", "Headset", "Bowman Headset", "Doub
 /// Primary Radio Slot loadout choices.
 GLOBAL_LIST_INIT(primary_radio_slot_choice, list("Left Ear", "Right Ear", "Wrist"))
 
+// Used to track fauna spawners on the phoron deposit away site.
+GLOBAL_LIST_INIT(fauna_spawners, list())
+
 /// Visual nets.
 GLOBAL_LIST_EMPTY_TYPED(visual_nets, /datum/visualnet)
 /// Camera visualnet.
@@ -135,6 +135,8 @@ GLOBAL_LIST_EMPTY(contained_clothing_species_adaption_cache)
 
 /// Cache for outfit selection.
 GLOBAL_LIST_EMPTY(outfit_cache)
+
+GLOBAL_LIST_EMPTY(all_particles)
 
 //////////////////////////
 /////Initial Building/////
@@ -194,6 +196,8 @@ GLOBAL_LIST_EMPTY(outfit_cache)
 	//Disability datums
 	paths = subtypesof(/datum/character_disabilities)
 	for(var/path in paths)
+		if(is_abstract(path))
+			continue
 		var/datum/character_disabilities/T = new path()
 		GLOB.chargen_disabilities_list[T.name] = T
 
@@ -243,13 +247,12 @@ GLOBAL_LIST_EMPTY(outfit_cache)
 		if(S.spawn_flags & IS_WHITELISTED)
 			GLOB.whitelisted_species += S.name
 
-	//Posters
-	paths = subtypesof(/datum/poster)
-	for(var/T in paths)
-		var/datum/poster/P = new T
-		GLOB.poster_designs += P
+	paths = typesof(/particles)
+	for (var/path in paths)
+		var/particles/P = new path()
+		GLOB.all_particles[P.name] = P
 
-	return 1
+	return TRUE
 
 GLOBAL_LIST_INIT(correct_punctuation, list("!" = TRUE, "." = TRUE, "?" = TRUE, "-" = TRUE, "~" = TRUE, \
 										"*" = TRUE, "/" = TRUE, ">" = TRUE, "\"" = TRUE, "'" = TRUE, \

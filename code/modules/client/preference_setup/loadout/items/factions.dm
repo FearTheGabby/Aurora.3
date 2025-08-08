@@ -40,6 +40,13 @@
 	idris_sec_uniforms["idris detective uniform"] = /obj/item/clothing/under/det/idris/alt
 	gear_tweaks += new /datum/gear_tweak/path(idris_sec_uniforms)
 
+/datum/gear/faction/idris_dress
+	display_name = "idris hospitality dress"
+	description = "A snazzy teal dress typically worn by Idris service staff."
+	path = /obj/item/clothing/under/dress/idris
+	slot = slot_w_uniform
+	faction = "Idris Incorporated"
+
 /datum/gear/faction/idris_armband
 	display_name = "idris armband"
 	path = /obj/item/clothing/accessory/armband/idris
@@ -137,8 +144,8 @@
 	zavodskoi_headwear["zavodskoi cap, alt"] = /obj/item/clothing/head/softcap/zavod/alt
 	zavodskoi_headwear["zavodskoi woolen hat"] = /obj/item/clothing/head/wool/zavod
 	zavodskoi_headwear["zavodskoi woolen hat, alt"] = /obj/item/clothing/head/wool/zavod/alt
-	zavodskoi_headwear["zavodskoi pilotka cap"] = /obj/item/clothing/head/sidecap/zavod
-	zavodskoi_headwear["zavodskoi pilotka cap, alt"] = /obj/item/clothing/head/sidecap/zavod/alt
+	zavodskoi_headwear["zavodskoi side cap"] = /obj/item/clothing/head/sidecap/zavod
+	zavodskoi_headwear["zavodskoi side cap, alt"] = /obj/item/clothing/head/sidecap/zavod/alt
 	gear_tweaks += new /datum/gear_tweak/path(zavodskoi_headwear)
 
 /datum/gear/faction/zavod_sec_uniforms
@@ -239,9 +246,9 @@
 	allowed_roles = list("Head of Security", "Warden", "Investigator", "Security Officer", "Security Cadet", "Security Personnel")
 
 /datum/gear/faction/zavodskoicape
-	display_name = "zavodskoi dominian great house cape selection"
-	description = "A selection of Zavodskoi-colored Dominian great house capes."
-	slot = slot_wear_suit
+	display_name = "zavodskoi dominian cape selection"
+	path = /obj/item/clothing/accessory/poncho/dominia_cape/zavod
+	flags = GEAR_HAS_DESC_SELECTION
 	faction = "Zavodskoi Interstellar"
 	culture_restriction = list(/singleton/origin_item/culture/dominia, /singleton/origin_item/culture/dominian_unathi)
 
@@ -256,6 +263,14 @@
 	zavodskoicape["zavodskoi dominia cape, caladius"] = /obj/item/clothing/accessory/poncho/dominia_cape/caladius/zavod
 	zavodskoicape["zavodskoi dominia cape, zhao"] = /obj/item/clothing/accessory/poncho/dominia_cape/zhao/zavod
 	gear_tweaks += new /datum/gear_tweak/path(zavodskoicape)
+
+/datum/gear/faction/zavodskoicape_colorable
+	display_name = "zavodskoi dominian cape, colorable"
+	path = /obj/item/clothing/accessory/poncho/dominia_cape/zavod/colorable
+	flags = GEAR_HAS_DESC_SELECTION | GEAR_HAS_ACCENT_COLOR_SELECTION
+	description = "A Zavodskoi Dominian cape with a colorable stripe that can be used to represent either a generic cape or a Minor House."
+	faction = "Zavodskoi Interstellar"
+	culture_restriction = list(/singleton/origin_item/culture/dominia, /singleton/origin_item/culture/dominian_unathi)
 
 // PMCG
 /datum/gear/faction/pmc_sunglasses
@@ -348,16 +363,70 @@
 	pmcg_headwear["EPMC softcap"] = /obj/item/clothing/head/softcap/pmc/epmc
 	pmcg_headwear["PMCG woolen hat"] = /obj/item/clothing/head/wool/pmc
 	pmcg_headwear["EPMC woolen hat"] = /obj/item/clothing/head/wool/pmc/alt
-	pmcg_headwear["PMCG garrison cap"] = /obj/item/clothing/head/sidecap/pmcg
+	pmcg_headwear["PMCG side cap"] = /obj/item/clothing/head/sidecap/pmcg
 	pmcg_headwear["Grupo Amapola utility cover"] = /obj/item/clothing/head/grupo_amapola/ute
 	gear_tweaks += new /datum/gear_tweak/path(pmcg_headwear)
 
+// START: PMCG MODSUIT
 /datum/gear/faction/pmc_modsuit
 	display_name = "PMCG modsuit"
 	description = "A modular PMCG fatigue jumpsuit."
 	path = /obj/item/clothing/under/pmc_modsuit
 	slot = slot_w_uniform
 	faction = "Private Military Contracting Group"
+
+/datum/gear/faction/pmc_modsuit/New()
+	..()
+	gear_tweaks += list(GLOB.gear_tweak_modsuit_configuration)
+
+
+GLOBAL_DATUM_INIT(gear_tweak_modsuit_configuration, /datum/gear_tweak/modsuit_configuration, new())
+
+/datum/gear_tweak/modsuit_configuration
+	/// the configuration of the modsuit, using just a list of the names
+	var/list/configuration_options = list()
+
+/datum/gear_tweak/modsuit_configuration/get_contents(var/metadata)
+	return "Modsuit Configuration: [metadata]"
+
+/datum/gear_tweak/modsuit_configuration/get_default()
+	var/obj/item/clothing/under/pmc_modsuit/modsuit_type = /obj/item/clothing/under/pmc_modsuit
+	return initial(modsuit_type.modsuit_mode)
+
+/// Instantiates the modsuit item so we can set up the configuration whenever it's needed, only called when the options haven't been configured yet
+/datum/gear_tweak/modsuit_configuration/proc/load_configuration_options()
+	// forgive me, for i have sinned. there is no way to initial() a list, so we need to instantiate the item and grab its data here
+	// and we can't do that in /New, cuz that fails CI. instead, we grab it on-demand here if the options aren't populated
+
+	var/obj/item/clothing/under/pmc_modsuit/initial_uniform = new()
+	for(var/option in initial_uniform.configuration_options)
+		configuration_options |= option
+	qdel(initial_uniform)
+
+/datum/gear_tweak/modsuit_configuration/get_metadata(var/user, var/metadata, var/title = "Character Preference")
+	if(!length(configuration_options))
+		load_configuration_options()
+
+	var/selected_configuration = tgui_input_list(user, "How do you want your modsuit to be set up?", title, configuration_options, metadata)
+	if(selected_configuration)
+		return selected_configuration
+
+/datum/gear_tweak/modsuit_configuration/tweak_item(var/obj/item/clothing/under/pmc_modsuit/modsuit, var/metadata, var/mob/living/carbon/human/H)
+	if(!metadata)
+		return
+
+	if(!length(configuration_options))
+		load_configuration_options()
+
+	// if this mode isn't in the options, don't continue, this'll protect us from old data if the mode names ever change
+	if(!(metadata in configuration_options))
+		return
+
+	modsuit.modsuit_mode = metadata
+	modsuit.selected_modsuit()
+
+// END: PMCG MODSUIT
+
 
 /datum/gear/faction/pmcg_sec_uniforms
 	display_name = "PMCG/EPMC security uniform selection"
@@ -381,7 +450,7 @@
 	pmcg_sec_uniforms["Grupo Amapola uniform"] = /obj/item/clothing/under/rank/security/pmc/grupo_amapola
 	pmcg_sec_uniforms["Nexus Corporate uniform"] = /obj/item/clothing/under/rank/security/pmc/nexus
 	gear_tweaks += new /datum/gear_tweak/path(pmcg_sec_uniforms)
-	gear_tweaks += list(gear_tweak_uniform_rolled_state)
+	gear_tweaks += list(GLOB.gear_tweak_uniform_rolled_state)
 
 /datum/gear/faction/erisec_patch
 	display_name = "EPMC sleeve patch"
@@ -559,7 +628,7 @@
 
 /datum/gear/faction/zenghu_gloves
 	display_name = "zeng-hu vinyl gloves"
-	path = /obj/item/clothing/gloves/zeng
+	path = /obj/item/clothing/gloves/latex/nitrile/zeng
 	slot = slot_gloves
 	faction = "Zeng-Hu Pharmaceuticals"
 
@@ -600,7 +669,6 @@
 	heph_labcoats["hephaestus labcoat, long"] = /obj/item/clothing/suit/storage/toggle/longcoat/heph
 	heph_labcoats["hephaestus corporate jacket"] = /obj/item/clothing/suit/storage/toggle/corp/heph
 	heph_labcoats["hephaestus winter coat"] = /obj/item/clothing/suit/storage/hooded/wintercoat/heph
-	heph_labcoats["hephaestus winter coat, alt"] = /obj/item/clothing/suit/storage/hooded/wintercoat/heph/alt
 	gear_tweaks += new /datum/gear_tweak/path(heph_labcoats)
 
 /datum/gear/faction/heph_beret
@@ -640,7 +708,6 @@
 	nt_labcoats["nanotrasen labcoat, long"] = /obj/item/clothing/suit/storage/toggle/longcoat/nt
 	nt_labcoats["nanotrasen corporate jacket"] = /obj/item/clothing/suit/storage/toggle/corp/nt
 	nt_labcoats["nanotrasen winter coat"] = /obj/item/clothing/suit/storage/hooded/wintercoat/nt
-	nt_labcoats["nanotrasen winter coat, alt"] = /obj/item/clothing/suit/storage/hooded/wintercoat/nt/alt
 	gear_tweaks += new /datum/gear_tweak/path(nt_labcoats)
 
 /datum/gear/faction/nt_custodialjumpsuit
@@ -713,7 +780,23 @@
 	orion_headwear["beret, orion"] = /obj/item/clothing/head/beret/corporate/orion
 	orion_headwear["orion woolen hat"] = /obj/item/clothing/head/wool/orion
 	orion_headwear["orion woolen hat, alt"] = /obj/item/clothing/head/wool/orion/alt
+	orion_headwear["orion softcap"] = /obj/item/clothing/head/softcap/orion
+	orion_headwear["Quick-E-Burger visor"] = /obj/item/clothing/head/qeburger_visor
 	gear_tweaks += new /datum/gear_tweak/path(orion_headwear)
+
+/datum/gear/faction/orion_qeburger_apron
+	display_name = "Quick-E-Burger apron"
+	description = "An apron for employees of Quick-E-Burger, a subsidiary of Orion Express."
+	path = /obj/item/clothing/accessory/apron/qeburgerapron
+	slot = slot_wear_suit
+	faction = "Orion Express"
+
+/datum/gear/faction/orion_qeburger_suit
+	display_name = "Quick-E-Burger jumpsuit"
+	description = "A jumpsuit for employees of Quick-E-Burger, a subsidiary of Orion Express."
+	path = /obj/item/clothing/under/qeburgerjumpsuit
+	slot = slot_w_uniform
+	faction = "Orion Express"
 
 //SCC
 /datum/gear/faction/scc_armband
@@ -764,8 +847,10 @@
 	..()
 	var/list/scc_headwear = list()
 	scc_headwear["beret, SCC"] = /obj/item/clothing/head/beret/scc
-	scc_headwear["SCC woolen hat"] = /obj/item/clothing/head/wool/scc
-	scc_headwear["SCC woolen hat, alt"] = /obj/item/clothing/head/wool/scc/alt
+	scc_headwear["woolen hat, SCC"] = /obj/item/clothing/head/wool/scc
+	scc_headwear["woolen hat, SCC, alt"] = /obj/item/clothing/head/wool/scc/alt
+	scc_headwear["bridge crew hat, SCC"] = /obj/item/clothing/head/caphat/bridge_crew
+	scc_headwear["bridge crew hat, SCC, alt"] = /obj/item/clothing/head/caphat/bridge_crew/alt
 	gear_tweaks += new /datum/gear_tweak/path(scc_headwear)
 
 /datum/gear/faction/scc_notepad

@@ -231,6 +231,9 @@
 /area/maintenance/hangar/port
 	name = "Port Hangar Maintenance"
 
+/area/maintenance/wing/cargo_compartment
+	name = "Auxiliary Cargo Maintenance"
+
 /area/maintenance/hangar/starboard
 	name = "Starboard Hangar Maintenance"
 
@@ -319,23 +322,32 @@
 	icon_state = "intrepid"
 	requires_power = TRUE
 
-/area/shuttle/intrepid/crew_compartment
-	name = "Intrepid Crew Compartment"
+/area/shuttle/intrepid/main_compartment
+	name = "Intrepid Main Compartment"
 
-/area/shuttle/intrepid/cargo_bay
-	name = "Intrepid Cargo Bay"
+/area/shuttle/intrepid/port_compartment
+	name = "Intrepid Port Compartment"
 
-/area/shuttle/intrepid/engine_compartment
-	name = "Engine Compartment"
+/area/shuttle/intrepid/starboard_compartment
+	name = "Intrepid Starboard Compartment"
 
-/area/shuttle/intrepid/atmos_compartment
-	name = "Atmos Compartment"
+/area/shuttle/intrepid/junction_compartment
+	name = "Intrepid Junction Compartment"
 
-/area/shuttle/intrepid/cockpit
-	name = "Cockpit"
+/area/shuttle/intrepid/buffet
+	name = "Intrepid Buffet"
 
-/area/shuttle/intrepid/quarters
-	name = "Intrepid Crew Quarters"
+/area/shuttle/intrepid/medical
+	name = "Intrepid Medical Compartment"
+
+/area/shuttle/intrepid/engineering
+	name = "Intrepid Engineering Compartment"
+
+/area/shuttle/intrepid/port_storage
+	name = "Intrepid Port Nacelle"
+
+/area/shuttle/intrepid/flight_deck
+	name = "Intrepid Flight Deck"
 
 /area/shuttle/canary
 	name = "Canary"
@@ -664,6 +676,10 @@
 
 /area/horizon/holodeck/source_lasertag
 	name = "Horizon - Holodeck - Laser Tag Arena"
+
+/area/horizon/holodeck/source_combat_training
+	name = "Horizon - Holodeck - Combat Training Arena"
+
 /********** Holodeck End **********/
 
 /********** Unique Start **********/

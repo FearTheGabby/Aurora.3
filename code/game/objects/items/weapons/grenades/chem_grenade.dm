@@ -17,6 +17,11 @@
 
 	matter = list(DEFAULT_WALL_MATERIAL = 700, MATERIAL_GLASS = 300)
 
+/obj/item/grenade/chem_grenade/feedback_hints(mob/user, distance, is_adjacent)
+	. += ..()
+	if(detonator)
+		. += "With attached [detonator.name]"
+
 /obj/item/grenade/chem_grenade/Initialize()
 	. = ..()
 	create_reagents(1000)
@@ -39,7 +44,7 @@
 	if(stage > 1 && !active && clown_check(user))
 		to_chat(user, SPAN_WARNING("You prime \the [name]!"))
 
-		msg_admin_attack("[user.name] ([user.ckey]) primed \a [src]. (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)",ckey=key_name(user))
+		msg_admin_attack("[user.name] ([user.ckey]) primed \a [src]. (<A href='byond://?_src_=holder;adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)",ckey=key_name(user))
 
 		activate()
 		add_fingerprint(user)
@@ -111,11 +116,6 @@
 			else
 				to_chat(user, SPAN_WARNING("\The [attacking_item] is empty."))
 
-/obj/item/grenade/chem_grenade/get_examine_text(mob/user, distance, is_adjacent, infix, suffix)
-	. = ..()
-	if(detonator)
-		. += "With attached [detonator.name]"
-
 /obj/item/grenade/chem_grenade/activate(mob/user as mob)
 	if(active) return
 
@@ -130,7 +130,7 @@
 		icon_state = initial(icon_state) + "_active"
 
 		if(user)
-			msg_admin_attack("[user.name] ([user.ckey]) primed \a [src] (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)",ckey=key_name(user))
+			msg_admin_attack("[user.name] ([user.ckey]) primed \a [src] (<A href='byond://?_src_=holder;adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)",ckey=key_name(user))
 
 	return
 

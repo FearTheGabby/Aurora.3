@@ -1,10 +1,11 @@
 /mob
-	density = 1
+	density = TRUE
 	layer = MOB_LAYER
 	animate_movement = 2
 	movable_flags = MOVABLE_FLAG_PROXMOVE
 	sight = DEFAULT_SIGHT
 	blocks_emissive = EMISSIVE_BLOCK_GENERIC
+	pass_flags_self = PASSMOB
 	var/datum/mind/mind
 	var/static/next_mob_id = 0
 
@@ -251,6 +252,8 @@
 
 	var/list/active_genes=list()
 	var/mob_size = MOB_MEDIUM
+	/// The icon size width of the mob. Used for langchat resizing.
+	var/icon_size = 32
 
 	var/list/progressbars
 

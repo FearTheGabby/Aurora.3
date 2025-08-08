@@ -39,6 +39,7 @@
 		name = "Storyteller ([client.ckey])"
 		SSodyssey.add_storyteller(src)
 		GLOB.storytellers.add_antagonist(mind)
+		C.add_storyteller_verbs()
 
 /mob/abstract/ghost/storyteller/ghostize(can_reenter_corpse, should_set_timer)
 	. = ..()
@@ -89,7 +90,7 @@
 			prefix = "(R)"
 			admin_stuff += "/([key])"
 			if(target != client)
-				admin_stuff += "(<A HREF='?src=[REF(target.holder)];adminplayerobservejump=[REF(src)]'>JMP</A>)"
+				admin_stuff += "(<A href='byond://?src=[REF(target.holder)];adminplayerobservejump=[REF(src)]'>JMP</A>)"
 		if(target.mob in messagemobs)
 			prefix = ""
 		if((target.mob in messagemobs) || display_remote)

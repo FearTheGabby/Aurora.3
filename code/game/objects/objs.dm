@@ -309,3 +309,18 @@
 /obj/proc/clean()
 	clean_blood()
 	color = initial(color)
+
+/obj/proc/output_spoken_message(var/message, var/message_verb = "transmits", var/display_overhead = TRUE, var/overhead_time = 2 SECONDS)
+	audible_message("\The <b>[src.name]</b> [message_verb], \"[message]\"")
+	if(display_overhead)
+		var/list/hearers = get_hearers_in_view(7, src)
+		var/list/clients_in_hearers = list()
+		for(var/mob/mob in hearers)
+			if(mob.client)
+				clients_in_hearers += mob.client
+		if(length(clients_in_hearers))
+			langchat_speech(message, hearers, GLOB.all_languages, skip_language_check = TRUE)
+
+/// Override this to customize the effects an activated signaler has.
+/obj/proc/do_signaler()
+	return

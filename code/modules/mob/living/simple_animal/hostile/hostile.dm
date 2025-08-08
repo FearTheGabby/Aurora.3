@@ -20,7 +20,6 @@ ABSTRACT_TYPE(/mob/living/simple_animal/hostile)
 	var/projectiletype
 	var/projectilesound
 	var/casingtype
-	var/move_to_delay = 4 //delay for the automated movement.
 	var/attack_delay = DEFAULT_ATTACK_COOLDOWN
 	var/list/friends = list()
 	var/break_stuff_probability = 10
@@ -31,6 +30,7 @@ ABSTRACT_TYPE(/mob/living/simple_animal/hostile)
 	hunger_enabled = 0//Until automated eating mechanics are enabled, disable hunger for hostile mobs
 	var/shuttletarget = null
 	var/enroute = 0
+	var/obj/effect/landmark/mob_waypoint/target_waypoint = null // The waypoint mobs that are spawned by mapped in spawners move to
 
 	// Vars to help find targets
 	var/list/targets = list()
@@ -191,10 +191,10 @@ ABSTRACT_TYPE(/mob/living/simple_animal/hostile)
 				GLOB.move_manager.stop_looping(src)
 				OpenFire(last_found_target)
 			else
-				GLOB.move_manager.move_to(src, last_found_target, 6, move_to_delay)
+				GLOB.move_manager.move_to(src, last_found_target, 6, speed)
 		else
 			change_stance(HOSTILE_STANCE_ATTACKING)
-			GLOB.move_manager.move_to(src, last_found_target, 1, move_to_delay)
+			GLOB.move_manager.move_to(src, last_found_target, 1, speed)
 
 /**
  * Attack the mob set in `target_mob`
@@ -312,6 +312,7 @@ ABSTRACT_TYPE(/mob/living/simple_animal/hostile)
 /mob/living/simple_animal/hostile/death()
 	..()
 	GLOB.move_manager.stop_looping(src)
+	LoseTarget() //Ensure we always stop chasing upon death
 
 /mob/living/simple_animal/hostile/think()
 	..()
@@ -433,8 +434,9 @@ ABSTRACT_TYPE(/mob/living/simple_animal/hostile)
 	if(prob(break_stuff_probability) || bypass_prob) //bypass_prob is used to make mob destroy things in the way to our target
 		for(var/card_dir in GLOB.cardinals) // North, South, East, West
 			var/turf/target_turf = get_step(src, card_dir)
+			var/obj/found_obj = null
 
-			var/obj/found_obj = locate(/obj/effect/energy_field) in target_turf
+			found_obj = locate(/obj/effect/energy_field) in target_turf
 			if(found_obj && !found_obj.invisibility && found_obj.density)
 				var/obj/effect/energy_field/e = found_obj
 				e.Stress(rand(0.5, 1.5))
@@ -480,7 +482,21 @@ ABSTRACT_TYPE(/mob/living/simple_animal/hostile)
 				hostile_last_attack = world.time
 				return TRUE
 
-	return FALSE
+			found_obj = locate(/obj/structure/girder) in target_turf
+			if(found_obj)
+				found_obj.attack_generic(src, rand(melee_damage_lower, melee_damage_upper), attacktext, TRUE)
+				hostile_last_attack = world.time
+				return TRUE
+
+			found_obj = null
+			for (var/obj/structure/barricade/B in target_turf)
+				found_obj = B
+				break
+			if(found_obj)
+				found_obj.attack_generic(src, rand(melee_damage_lower, melee_damage_upper), attacktext, TRUE)
+				hostile_last_attack = world.time
+				return TRUE
+		return FALSE
 
 /mob/living/simple_animal/hostile/RangedAttack(atom/A, params) //Player firing
 	if(ranged)
@@ -497,7 +513,7 @@ ABSTRACT_TYPE(/mob/living/simple_animal/hostile)
 	return ..()
 
 /mob/living/simple_animal/hostile/proc/check_horde()
-	if(evacuation_controller.is_prepared())
+	if(GLOB.evacuation_controller.is_prepared())
 		if(!enroute && !last_found_target)	//The shuttle docked, all monsters rush for the escape hallway
 			if(!shuttletarget && GLOB.escape_list.len) //Make sure we didn't already assign it a target, and that there are targets to pick
 				shuttletarget = pick(GLOB.escape_list) //Pick a shuttle target

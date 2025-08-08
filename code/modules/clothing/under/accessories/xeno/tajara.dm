@@ -51,6 +51,11 @@
 	icon_state = "furscarf_cream"
 	item_state = "furscarf_cream"
 
+/obj/item/clothing/accessory/tajaran/colorable
+	desc = "A furred scarf, a common tajaran vanity item."
+	icon_state = "furscarf_colorable"
+	item_state = "furscarf_colorable"
+
 /obj/item/clothing/accessory/tajaran/summershirt
 	name = "adhomian summerwear shirt"
 	desc = "A simple piece of adhomian summerwear made with linen."
@@ -115,6 +120,22 @@
 	desc = "A fancy black Adhomian cloak."
 	icon_state = "hb_cloak"
 	item_state = "hb_cloak"
+
+/obj/item/clothing/accessory/poncho/tajarancloak/colorable
+	name = "fancy adhomian cloak"
+	desc = "A fancy Adhomian cloak."
+	icon_state = "hb_cloak_colorable"
+	item_state = "hb_cloak_colorable"
+	worn_overlay =  "adornment"
+	build_from_parts = TRUE
+	has_accents = TRUE
+
+/obj/item/clothing/accessory/poncho/tajarancloak/colorable/royal
+	name = "adhomian royal cloak"
+	desc = "An Adhomian cloak with an asymmetric design."
+	icon_state = "royal_cloak_colorable"
+	item_state = "royal_cloak_colorable"
+	worn_overlay =  "adornment"
 
 /obj/item/clothing/accessory/tajaran_wrap
 	name = "marriage wrap"
@@ -529,54 +550,14 @@
 	desc = "A fancy waistcoat worn by the New Kingdom's nobility. Likely a hand-me-down."
 	icon_state = "nka_waistcoat"
 	item_state = "nka_waistcoat"
-
-/obj/item/clothing/accessory/tajaran/nka_waistcoat/update_icon()
-	ClearOverlays()
-	var/image/buttons = image(icon, null, "nka_waistcoat_buttons")
-	buttons.appearance_flags = RESET_COLOR
-	AddOverlays(buttons)
-
-/obj/item/clothing/accessory/tajaran/nka_waistcoat/get_mob_overlay(var/mob/living/carbon/human/H, var/mob_icon, var/mob_state, var/slot)
-	var/image/I = ..()
-	if(slot == slot_wear_suit_str)
-		var/image/buttons = image(mob_icon, null, "nka_waistcoat_un_buttons")
-		buttons.appearance_flags = RESET_COLOR
-		I.AddOverlays(buttons)
-	return I
-
-/obj/item/clothing/accessory/tajaran/nka_waistcoat/get_accessory_mob_overlay(mob/living/carbon/human/H, force)
-	var/image/base = ..()
-	var/image/buttons = image(icon, null, "nka_waistcoat_un_buttons")
-	buttons.appearance_flags = RESET_COLOR
-	base.AddOverlays(buttons)
-	return base
+	has_accents = TRUE
 
 /obj/item/clothing/accessory/tajaran/nka_vest
 	name = "noble adhomian vest"
 	desc = "A fancy vest worn by the New Kingdom's nobility. Likely a hand-me-down."
 	icon_state = "nka_vest"
 	item_state = "nka_vest"
-
-/obj/item/clothing/accessory/tajaran/nka_vest/update_icon()
-	ClearOverlays()
-	var/image/buttons = image(icon, null, "nka_vest_buttons")
-	buttons.appearance_flags = RESET_COLOR
-	AddOverlays(buttons)
-
-/obj/item/clothing/accessory/tajaran/nka_vest/get_mob_overlay(var/mob/living/carbon/human/H, var/mob_icon, var/mob_state, var/slot)
-	var/image/I = ..()
-	if(slot == slot_wear_suit_str)
-		var/image/buttons = image(mob_icon, null, "nka_vest_un_buttons")
-		buttons.appearance_flags = RESET_COLOR
-		I.AddOverlays(buttons)
-	return I
-
-/obj/item/clothing/accessory/tajaran/nka_vest/get_accessory_mob_overlay(mob/living/carbon/human/H, force)
-	var/image/base = ..()
-	var/image/buttons = image(icon, null, "nka_vest_un_buttons")
-	buttons.appearance_flags = RESET_COLOR
-	base.AddOverlays(buttons)
-	return base
+	has_accents = TRUE
 
 /obj/item/clothing/accessory/dogtags/adhomai
 	name = "adhomian dogtags"
@@ -589,7 +570,7 @@
 /obj/item/dogtag/adhomai_tag
 	name = "adhomian dogtag"
 	desc = "Dogtags issued to the Tajaran soldiers of all Adhomian factions. Veterans usually bring them back home."
-	icon = 'icons/clothing/accessories/dogtags.dmi'
+	icon = 'icons/obj/item/clothing/accessory/dogtags.dmi'
 	icon_state = "adhomai_tag"
 	w_class = WEIGHT_CLASS_SMALL
 

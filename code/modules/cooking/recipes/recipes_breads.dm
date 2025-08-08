@@ -133,7 +133,7 @@
 	result = /obj/item/reagent_containers/food/snacks/honeybun
 
 /singleton/recipe/flatbread
-	appliance = OVEN
+	appliance = OVEN | MICROWAVE
 	items = list(
 		/obj/item/reagent_containers/food/snacks/sliceable/flatdough
 	)
@@ -165,7 +165,7 @@
 	result = /obj/item/reagent_containers/food/snacks/cracker
 
 /singleton/recipe/stuffing
-	appliance = OVEN
+	appliance = OVEN | MICROWAVE
 	reagents = list(/singleton/reagent/water = 5, /singleton/reagent/sodiumchloride = 1, /singleton/reagent/blackpepper = 1)
 	items = list(
 		/obj/item/reagent_containers/food/snacks/sliceable/bread
@@ -244,7 +244,7 @@
 	result = /obj/item/reagent_containers/food/snacks/ntella_bread
 
 /singleton/recipe/slimetoast
-	appliance = SKILLET
+	appliance = SKILLET | MICROWAVE
 	reagents = list(/singleton/reagent/slimejelly = 5)
 	items = list(
 		/obj/item/reagent_containers/food/snacks/breadslice
@@ -252,7 +252,7 @@
 	result = /obj/item/reagent_containers/food/snacks/jelliedtoast/slime
 
 /singleton/recipe/jelliedtoast
-	appliance = SKILLET
+	appliance = SKILLET | MICROWAVE
 	reagents = list(/singleton/reagent/nutriment/cherryjelly = 5)
 	items = list(
 		/obj/item/reagent_containers/food/snacks/breadslice
@@ -260,7 +260,7 @@
 	result = /obj/item/reagent_containers/food/snacks/jelliedtoast/cherry
 
 /singleton/recipe/pbtoast
-	appliance = SKILLET
+	appliance = SKILLET | MICROWAVE
 	reagents = list(/singleton/reagent/nutriment/peanutbutter = 5)
 	items = list(
 		/obj/item/reagent_containers/food/snacks/breadslice
@@ -268,7 +268,7 @@
 	result = /obj/item/reagent_containers/food/snacks/pbtoast
 
 /singleton/recipe/egginthebasket
-	appliance = SKILLET
+	appliance = SKILLET | MICROWAVE
 	items = list(
 		/obj/item/reagent_containers/food/snacks/egg,
 		/obj/item/reagent_containers/food/snacks/breadslice
@@ -286,7 +286,7 @@
 	result = /obj/item/reagent_containers/food/snacks/garlicbread
 
 /singleton/recipe/honeytoast
-	appliance = SKILLET
+	appliance = SKILLET | MICROWAVE
 	reagents = list(/singleton/reagent/nutriment/honey = 5)
 	items = list(
 		/obj/item/reagent_containers/food/snacks/breadslice
@@ -322,20 +322,51 @@
 	result = /obj/item/reagent_containers/food/snacks/sandwich
 
 /singleton/recipe/toastedsandwich
-	appliance = SKILLET
+	appliance = SKILLET | MICROWAVE
 	items = list(
 		/obj/item/reagent_containers/food/snacks/sandwich
 	)
 	result = /obj/item/reagent_containers/food/snacks/toastedsandwich
 
 /singleton/recipe/grilledcheese
-	appliance = SKILLET
+	appliance = SKILLET | MICROWAVE
 	items = list(
 		/obj/item/reagent_containers/food/snacks/breadslice,
 		/obj/item/reagent_containers/food/snacks/breadslice,
 		/obj/item/reagent_containers/food/snacks/cheesewedge
 	)
 	result = /obj/item/reagent_containers/food/snacks/grilledcheese
+
+/singleton/recipe/grilled_mac_and_cheese_sandwich
+	appliance = SKILLET | MICROWAVE
+	items = list(
+		/obj/item/reagent_containers/food/snacks/breadslice,
+		/obj/item/reagent_containers/food/snacks/breadslice,
+		/obj/item/reagent_containers/food/snacks/macandcheese
+	)
+	result = /obj/item/reagent_containers/food/snacks/grilled_mac_and_cheese
+
+/singleton/recipe/grilled_triple_cheese_crunch_sandwich
+	appliance = SKILLET | MICROWAVE
+	items = list(
+		/obj/item/reagent_containers/food/snacks/breadslice,
+		/obj/item/reagent_containers/food/snacks/breadslice,
+		/obj/item/reagent_containers/food/snacks/cheesewedge,
+		/obj/item/reagent_containers/food/snacks/nakarka_wedge,
+		/obj/item/reagent_containers/food/snacks/cheesiehonkers
+	)
+	reagent_mix = RECIPE_REAGENT_REPLACE //Simplify end product
+	result = /obj/item/reagent_containers/food/snacks/grilled_triple_cheese_crunch_sandwich
+
+/singleton/recipe/crab_leg_grilled_cheese_sandwich
+	appliance = SKILLET | MICROWAVE
+	items = list(
+		/obj/item/reagent_containers/food/snacks/breadslice,
+		/obj/item/reagent_containers/food/snacks/breadslice,
+		/obj/item/reagent_containers/food/snacks/cheesewedge,
+		/obj/item/reagent_containers/food/snacks/crabmeat
+	)
+	result = /obj/item/reagent_containers/food/snacks/crab_leg_grilled_cheese_sandwich
 
 /singleton/recipe/reubensandwich
 	reagents = list(/singleton/reagent/nutriment/mayonnaise = 5, /singleton/reagent/nutriment/ketchup = 5)

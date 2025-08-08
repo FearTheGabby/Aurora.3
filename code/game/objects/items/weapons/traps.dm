@@ -65,6 +65,7 @@
 	user.visible_message("[SPAN_BOLD("[user]")] starts deploying \the [src]...", SPAN_NOTICE("You begin deploying \the [src]!"), SPAN_WARNING("You hear the slow creaking of a spring."))
 
 	if(do_after(user, 5 SECONDS))
+		playsound(src, 'sound/items/crank.ogg', 50, TRUE)
 		user.visible_message("[SPAN_BOLD("[user]")] deploys \the [src].", SPAN_WARNING("You deploy \the [src]!"), SPAN_WARNING("You hear a latch click loudly."))
 		deployed = TRUE
 		update_icon()
@@ -167,8 +168,11 @@
  */
 /obj/item/trap/sharpened
 	name = "sharpened mechanical trap"
-	desc_antag = "This device has an even higher chance of penetrating armor and locking foes in place."
 	activated_armor_penetration = 100
+
+/obj/item/trap/sharpened/antagonist_hints(mob/user, distance, is_adjacent)
+	. += ..()
+	. += "This device has an even higher chance of penetrating armor and locking foes in place."
 
 /**
  * # Tripwire trap
@@ -198,6 +202,7 @@
 /obj/item/trap/tripwire/deploy(mob/user)
 	user.visible_message(SPAN_WARNING("\The [user] starts to deploy \the [src]."), SPAN_WARNING("You begin deploying \the [src]!"))
 	if(do_after(user, 5 SECONDS))
+		playsound(src, 'sound/items/crank.ogg', 50, TRUE)
 		user.visible_message(SPAN_WARNING("\The [user] deploys \the [src]."), SPAN_WARNING("You deploy \the [src]!"))
 		deployed = TRUE
 		update_icon()
@@ -236,6 +241,12 @@
 	icon_state = "punji"
 	var/message = null
 
+/obj/item/trap/punji/feedback_hints(mob/user, distance, is_adjacent)
+	. += ..()
+	if(src.message && distance < 3)
+		. += SPAN_ALERT("You notice something written on a plate inside the trap:")
+		. += SPAN_BAD(message)
+
 /obj/item/trap/punji/on_entered(datum/source, atom/movable/arrived, atom/old_loc, list/atom/old_locs)
 	if(deployed && isliving(arrived))
 		var/mob/living/L = arrived
@@ -256,6 +267,8 @@
 
 	//Try to apply the damage
 	var/success = L.apply_damage(50, DAMAGE_BRUTE, target_zone, used_weapon = src, armor_pen = activated_armor_penetration)
+	//Apply weakness, so the victim doesn't walk immediately back out of the trap
+	L.Weaken(10)
 
 	//If successfully applied, give the message
 	if(success)
@@ -265,11 +278,16 @@
 
 		//Give a simple message and return if it's not a human
 		if(!ishuman(L))
-			L.visible_message(SPAN_DANGER("You step on \the [src]!"))
+			L.visible_message(SPAN_DANGER("[L] steps on \the [src]!"))
 			return
 
 		var/mob/living/carbon/human/human = L
 		var/obj/item/organ/organ = human.get_organ(target_zone)
+
+		if(isipc(L) || isrobot(L))
+			playsound(src, 'sound/weapons/smash.ogg', 100, TRUE)
+		else
+			playsound(src, 'sound/weapons/heavysmash.ogg', 100, TRUE)
 
 		human.visible_message(SPAN_DANGER("\The [human] steps on \the [src]!"),
 								SPAN_WARNING(FONT_LARGE(SPAN_DANGER("You step on \the [src], feel your body fall, and something sharp penetrate your [organ.name]!"))),
@@ -296,12 +314,6 @@
 		return
 
 	victim.visible_message(SPAN_ALERT("You notice something written on a plate inside the trap: <br>")+SPAN_BAD(message))
-
-/obj/item/trap/punji/get_examine_text(mob/user, distance, is_adjacent, infix, suffix)
-	. = ..()
-	if(src.message && distance < 3)
-		. += SPAN_ALERT("You notice something written on a plate inside the trap:")
-		. += SPAN_BAD(message)
 
 /obj/item/trap/punji/verb/hide_under()
 	set src in oview(1)
@@ -398,8 +410,8 @@
 		return SPAN_NOTICE("You can secure the trap by using a screwdriver on it. This will anchor it to the floor, and ready it for deployment.")
 	return SPAN_NOTICE("You can unsecure the trap by using a screwdriver on it. This will unanchor it from the floor, allowing it to be moved.")
 
-/obj/item/trap/animal/MouseDrop_T(atom/dropping, mob/user)
-	var/mob/living/capturing_mob = dropping
+/obj/item/trap/animal/mouse_drop_receive(atom/dropped, mob/user, params)
+	var/mob/living/capturing_mob = dropped
 	if(!istype(capturing_mob))
 		return
 
@@ -670,7 +682,7 @@
 		..()
 
 /obj/item/trap/animal/Move()
-	..()
+	. = ..()
 	if(captured)
 		var/datum/M = captured.resolve()
 		if(isliving(M))
@@ -704,16 +716,16 @@
 			user.forceMove(loc)
 			user.visible_message("[SPAN_BOLD("[user]")] successfully moves around \the [src] without triggering it.", SPAN_NOTICE("You successfully move around \the [src] without triggering it."))
 
-/obj/item/trap/animal/MouseDrop(over_object, src_location, over_location)
-	if(!isliving(usr) || !src.Adjacent(usr))
+/obj/item/trap/animal/mouse_drop_dragged(atom/over, mob/user, src_location, over_location, params)
+	if(!isliving(user) || !src.Adjacent(user))
 		return
 
 	if(captured)
-		pass_without_trace(usr) // It's full
+		pass_without_trace(user) // It's full
 		return
 
-	else if(iscarbon(usr))
-		pass_without_trace(usr)
+	else if(iscarbon(user))
+		pass_without_trace(user)
 		return
 
 	return ..()
@@ -827,25 +839,25 @@
 	else
 		..()
 
-/obj/item/trap/animal/large/MouseDrop(over_object, src_location, over_location)
+/obj/item/trap/animal/large/mouse_drop_dragged(atom/over, mob/user, src_location, over_location, params)
 	if(captured)
-		to_chat(usr, SPAN_WARNING("The trap door's down, you can't get through there!"))
+		to_chat(user, SPAN_WARNING("The trap door's down, you can't get through there!"))
 		return
 
-	if(!src.Adjacent(usr))
+	if(!src.Adjacent(user))
 		return
 
-	if(!ishuman(usr))
+	if(!ishuman(user))
 		..()
 		return
 
 	var/trigger_chance = 0
-	if(usr.a_intent == I_HELP)
+	if(user.a_intent == I_HELP)
 		trigger_chance = 100
-	else if(usr.a_intent != I_HURT)
+	else if(user.a_intent != I_HURT)
 		trigger_chance = 50
 
-	pass_without_trace(usr, trigger_chance)
+	pass_without_trace(user, trigger_chance)
 
 /obj/item/trap/animal/large/CanPass(atom/movable/mover, turf/target, height=0, air_group=0)
 	if(deployed)
@@ -865,8 +877,8 @@
 	force = 11
 	w_class = WEIGHT_CLASS_HUGE
 
-/obj/item/large_trap_foundation/get_examine_text(mob/user, distance, is_adjacent, infix, suffix)
-	. = ..()
+/obj/item/large_trap_foundation/feedback_hints(mob/user, distance, is_adjacent)
+	. += ..()
 	. += SPAN_NOTICE("\The [src] can be turned into a large trap by attaching twelve metal rods to it.")
 
 /obj/item/large_trap_foundation/attackby(obj/item/attacking_item, mob/user)

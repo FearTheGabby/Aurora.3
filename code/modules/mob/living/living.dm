@@ -8,9 +8,7 @@
 
 	return
 
-//mob verbs are faster than object verbs. See above.
-var/mob/living/next_point_time = 0
-/mob/living/pointed(atom/A as mob|obj|turf in view())
+/mob/living/_pointed(atom/pointing_at)
 	if(src.stat || src.restrained())
 		return FALSE
 	if(src.status_flags & FAKEDEATH)
@@ -19,7 +17,7 @@ var/mob/living/next_point_time = 0
 	. = ..()
 
 	if(.)
-		visible_message("<b>\The [src]</b> points to \the [A].")
+		visible_message("<b>\The [src]</b> points to \the [pointing_at].")
 
 /mob/living/drop_from_inventory(var/obj/item/W, var/atom/target)
 	. = ..(W, target)
@@ -35,7 +33,7 @@ default behaviour is:
 */
 /mob/living/proc/can_move_mob(var/mob/living/swapped, swapping = 0, passive = 0)
 	if(!swapped)
-		return 1
+		return TRUE
 	if(!passive)
 		return swapped.can_move_mob(src, swapping, 1)
 	else
@@ -45,10 +43,10 @@ default behaviour is:
 		else
 			context_flags = swapped.mob_push_flags
 		if(!mob_bump_flag) //nothing defined, go wild
-			return 1
+			return TRUE
 		if(mob_bump_flag & context_flags)
-			return 1
-		return 0
+			return TRUE
+		return FALSE
 
 /mob/living
 	var/tmp/last_push_notif
@@ -163,10 +161,12 @@ default behaviour is:
 					return
 
 			step(AM, t)
-			if(ishuman(AM) && AM:grabbed_by)
-				for(var/obj/item/grab/G in AM:grabbed_by)
-					step(G:assailant, get_dir(G:assailant, AM))
-					G.adjust_position()
+			if(ishuman(AM))
+				var/mob/living/carbon/human/H = AM
+				if(H.grabbed_by)
+					for(var/obj/item/grab/G in H.grabbed_by)
+						step(G.assailant, get_dir(G.assailant, H))
+						G.adjust_position()
 
 		now_pushing = FALSE
 
@@ -200,18 +200,20 @@ default behaviour is:
 
 /mob/living/proc/can_swap_with(var/mob/living/tmob)
 	if(tmob.buckled_to || buckled_to)
-		return 0
+		return FALSE
+
 	//BubbleWrap: people in handcuffs are always switched around as if they were on 'help' intent to prevent a person being pulled from being seperated from their puller
 	if(!(tmob.mob_always_swap || (tmob.a_intent == I_HELP || tmob.restrained()) && (a_intent == I_HELP || src.restrained())))
-		return 0
+		return FALSE
+
 	if(!tmob.canmove || !canmove)
-		return 0
+		return FALSE
 
 	if(swap_density_check(src, tmob))
-		return 0
+		return FALSE
 
 	if(swap_density_check(tmob, src))
-		return 0
+		return FALSE
 
 	if(pulling?.density && tmob.pulling?.density) // if both are pulling, don't shuffle
 		return FALSE
@@ -350,7 +352,7 @@ default behaviour is:
 // ++++ROCKDTBEN++++ MOB PROCS //END
 
 /mob/proc/get_contents()
-
+	return list()
 
 //Recursive function to find everything a mob is holding.
 /mob/living/get_contents(var/obj/item/storage/Storage = null)
@@ -391,6 +393,7 @@ default behaviour is:
 				L += get_contents(D.wrapped)
 		return L
 
+/// Returns TRUE if mob has obj of A type anywhere in its contents.
 /mob/living/proc/check_contents_for(A)
 	var/list/L = src.get_contents()
 
@@ -671,7 +674,13 @@ default behaviour is:
 	set name = "Resist"
 	set category = "IC"
 
+	DEFAULT_QUEUE_OR_CALL_VERB(VERB_CALLBACK(src, PROC_REF(execute_resist)))
+
+///proc extender of [/mob/living/verb/resist] meant to make the process queable if the server is overloaded when the verb is called
+/mob/living/proc/execute_resist()
+
 	if(!incapacitated(INCAPACITATION_KNOCKOUT) && canClick())
+		SEND_SIGNAL(src, COMSIG_MOB_RESISTED)
 		resist_grab()
 		if(!weakened)
 			process_resist()
@@ -915,6 +924,8 @@ default behaviour is:
 		COMSIG_ATOM_ENTERED = PROC_REF(on_entered),
 	)
 
+	register_init_signals()
+
 	AddElement(/datum/element/connect_loc, loc_connections)
 
 /mob/living/Destroy()
@@ -1071,3 +1082,10 @@ default behaviour is:
 ///Performs the aftereffects of blocking a projectile.
 /mob/living/proc/block_projectile_effects()
 	return
+
+/// Uses presence of [TRAIT_UNDENSE] to figure out what is the correct density state for the mob. Triggered by trait signal.
+/mob/living/proc/update_density()
+	if(HAS_TRAIT(src, TRAIT_UNDENSE))
+		set_density(FALSE)
+	else
+		set_density(TRUE)
