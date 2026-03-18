@@ -17,7 +17,7 @@
 		B.update_icon()
 
 	single_spark(T)
-	new /obj/effect/effect/smoke/illumination(T, brightness=15)
+	new /obj/effect/smoke/illumination(T, brightness=15)
 	qdel(src)
 
 /obj/item/grenade/flashbang/explode_in_hand(var/mob/living/carbon/human/victim, var/obj/item/organ/external/exploded_hand)
@@ -52,9 +52,6 @@
 	icon = 'icons/obj/grenade.dmi'
 	icon_state = "clusterbang"
 
-/obj/item/grenade/flashbang/clusterbang/Destroy()
-	. = ..()
-	GC_TEMPORARY_HARDDEL
 
 /obj/item/grenade/flashbang/clusterbang/prime()
 	var/numspawned = rand(4,8)
@@ -117,6 +114,3 @@
 	addtimer(CALLBACK(src, PROC_REF(prime)), dettime)
 	..()
 
-/obj/item/grenade/flashbang/cluster/Destroy()
-	. = ..()
-	GC_TEMPORARY_HARDDEL

@@ -2,11 +2,12 @@
 	icon = 'icons/obj/guns/modular_laser.dmi'
 	icon_state = "bfg"
 	contained_sprite = TRUE
+	w_class = WEIGHT_CLASS_TINY  //A dissasembled gun is easier to carry, this lets people bring bits of their broken gun back to R&D.
 	var/reliability = 0
 	var/damage = 1
-	var/fire_delay = 0
+	var/fire_delay = 1
 	var/condition = 0 //inverse health of the component. subtracted from reliability.
-	var/shots = 0
+	var/shots = 1
 	var/burst = 0
 	var/accuracy = 0
 	var/obj/item/repair_item
@@ -44,8 +45,8 @@
 	var/criticality
 	repair_item = /obj/item/weldingtool
 
-/obj/item/laser_components/modifier/get_examine_text(mob/user, distance, is_adjacent, infix, suffix)
-	. = ..()
+/obj/item/laser_components/modifier/condition_hints(mob/user, distance, is_adjacent)
+	. += ..()
 	if(distance <= 1)
 		if(malus > base_malus)
 			. += SPAN_WARNING("\The [src] appears damaged.")
@@ -73,7 +74,13 @@
 	shots = 5
 	damage = 10
 	reliability = 50
+	fire_delay = 5
 	repair_item = /obj/item/stack/cable_coil
+
+/obj/item/laser_components/capacitor/condition_hints(mob/user, distance, is_adjacent)
+	. += ..()
+	if(distance <= 1 && condition > 0)
+		. += SPAN_WARNING("\The [src] appears damaged.")
 
 /obj/item/laser_components/capacitor/repair_module(var/obj/item/stack/cable_coil/C)
 	if(!istype(C))
@@ -84,11 +91,6 @@
 		condition = max(condition - 5, 0)
 		return 1
 	return 0
-
-/obj/item/laser_components/capacitor/get_examine_text(mob/user, distance, is_adjacent, infix, suffix)
-	. = ..()
-	if(distance <= 1 && condition > 0)
-		. += SPAN_WARNING("\The [src] appears damaged.")
 
 /obj/item/laser_components/capacitor/proc/small_fail(var/mob/user, var/obj/item/gun/energy/laser/prototype/prototype)
 	return
@@ -108,6 +110,11 @@
 	reliability = 25
 	repair_item = /obj/item/stack/nanopaste
 
+/obj/item/laser_components/focusing_lens/condition_hints(mob/user, distance, is_adjacent)
+	. += ..()
+	if(distance <= 1 && condition > 0)
+		. += SPAN_WARNING("\The [src] appears damaged.")
+
 /obj/item/laser_components/focusing_lens/repair_module(var/obj/item/stack/nanopaste/N)
 	if(!istype(N))
 		return
@@ -117,11 +124,6 @@
 		condition = max(condition - 5, 0)
 		return 1
 	return 0
-
-/obj/item/laser_components/focusing_lens/get_examine_text(mob/user, distance, is_adjacent, infix, suffix)
-	. = ..()
-	if(distance <= 1 && condition > 0)
-		. += SPAN_WARNING("\The [src] appears damaged.")
 
 /obj/item/laser_components/modulator
 	name = "laser modulator"
@@ -134,10 +136,9 @@
 /obj/item/laser_components/modulator/degrade()
 	return
 
-/obj/item/device/laser_assembly
+/obj/item/laser_assembly
 	name = "laser assembly (small)"
 	desc = "A case for shoving things into. Hopefully they work."
-	w_class = WEIGHT_CLASS_SMALL
 	icon = 'icons/obj/guns/modular_laser.dmi'
 	var/base_icon_state = "small"
 	contained_sprite = TRUE
@@ -153,11 +154,11 @@
 	var/ready_to_craft = FALSE // Use by weapons analyzer.
 	var/datum/weakref/analyzer
 
-/obj/item/device/laser_assembly/Initialize()
+/obj/item/laser_assembly/Initialize()
 	. = ..()
 	update_icon()
 
-/obj/item/device/laser_assembly/attackby(obj/item/attacking_item, mob/user)
+/obj/item/laser_assembly/attackby(obj/item/attacking_item, mob/user)
 	var/obj/item/laser_components/A = attacking_item
 	var/success = FALSE
 	if(!istype(A))
@@ -203,7 +204,7 @@
 
 	return success
 
-/obj/item/device/laser_assembly/update_icon()
+/obj/item/laser_assembly/update_icon()
 	..()
 	underlays.Cut()
 	icon_state = "[base_icon_state]_[stage]"
@@ -213,11 +214,11 @@
 				underlays += mod.gun_overlay
 
 
-/obj/item/device/laser_assembly/proc/check_completion()
+/obj/item/laser_assembly/proc/check_completion()
 	if(capacitor && focusing_lens && modulator)
 		return finish()
 
-/obj/item/device/laser_assembly/proc/finish()
+/obj/item/laser_assembly/proc/finish()
 
 	var/obj/machinery/r_n_d/weapons_analyzer/an = analyzer.resolve()
 	if(!an)
@@ -250,7 +251,7 @@
 	qdel(src)
 	return TRUE
 
-/obj/item/device/laser_assembly/get_print_info()
+/obj/item/laser_assembly/get_print_info()
 	. = ""
 	for(var/i in list(capacitor, focusing_lens, modulator) + gun_mods)
 		var/obj/item/laser_components/l_component = i

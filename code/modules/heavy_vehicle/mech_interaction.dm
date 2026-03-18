@@ -228,6 +228,8 @@
 	user.forceMove(src)
 	LAZYDISTINCTADD(pilots, user)
 	RegisterSignal(user, COMSIG_MOB_FACEDIR, PROC_REF(handle_user_turn))
+	RegisterSignal(user, COMSIG_INPUT_KEY_QUICK_EQUIP, PROC_REF(strafe_left))
+	RegisterSignal(user, COMSIG_INPUT_KEY_DROP, PROC_REF(strafe_right))
 	playsound(src, 'sound/machines/windowdoor.ogg', 50, 1)
 	if(user.client) user.client.screen |= hud_elements
 	LAZYDISTINCTADD(user.additional_vision_handlers, src)
@@ -260,60 +262,114 @@
 		set_intent(I_HURT)
 		LAZYREMOVE(pilots, user)
 		UnregisterSignal(user, COMSIG_MOB_FACEDIR)
+		UnregisterSignal(user, COMSIG_INPUT_KEY_QUICK_EQUIP)
+		UnregisterSignal(user, COMSIG_INPUT_KEY_DROP)
 		UNSETEMPTY(pilots)
 
 /mob/living/heavy_vehicle/proc/handle_user_turn(var/mob/living/user, var/direction)
 	SIGNAL_HANDLER
 	INVOKE_ASYNC(src, TYPE_PROC_REF(/atom, relaymove), user, direction, TRUE)
 
+/mob/living/heavy_vehicle/proc/strafe_left(var/mob/user, var/cancelled)
+	SIGNAL_HANDLER
+	// Stop the pilot from attempting to drop the item in their hands, we're replacing it with a strafe input.
+	*cancelled = TRUE
+	strafe_move(user, angle2dir(dir2angle(dir) + 90))
+
+/mob/living/heavy_vehicle/proc/strafe_right(var/mob/user, var/cancelled)
+	SIGNAL_HANDLER
+	// Stop the pilot from attempting to drop the item in their hands, we're replacing it with a strafe input.
+	*cancelled = TRUE
+	strafe_move(user, angle2dir(dir2angle(dir) + 270))
+
 /mob/living/heavy_vehicle/relaymove(mob/living/user, direction, var/turn_only = FALSE)
 	. = ..()
-
-	if(!can_move(user))
-		return
 
 	if(hallucination >= EMP_MOVE_DISRUPT && prob(30))
 		direction = pick(GLOB.cardinals)
 
-	var/do_strafe = !isnull(user.facing_dir) && (legs.turn_delay <= legs.move_delay)
-	if(!do_strafe && dir != direction)
+	// Convert keyboard inputs to Battletech-style controls.
+	switch (direction)
+		if (NORTH) // "Throttle Forwards"
+			throttle_move(user, dir, FALSE)
+		if (SOUTH) // "Throttle Reverse"
+			throttle_move(user, angle2dir(dir2angle(dir) + 180), TRUE)
+		if (EAST) // "Turn Right"
+			rotate_by_angle(user, angle2dir(dir2angle(dir) + 90))
+		if (WEST) // "Turn Left"
+			rotate_by_angle(user, angle2dir(dir2angle(dir) + 270))
+
+/mob/living/heavy_vehicle/proc/throttle_move(mob/living/user, direction, reverse)
+	if (!legs || !can_move(user))
+		return
+
+	// Get the tile in the direction.
+	var/turf/target_loc = get_step(src, direction)
+	if(!legs.can_move_on(loc, target_loc))
+		return
+
+	if (reverse)
+		next_mecha_move += legs.reverse_delay
+
+	// Then send a move command
+	if(incorporeal_move)
+		if(legs.mech_step_sound)
+			playsound(src.loc,legs.mech_step_sound,40,1)
 		use_cell_power(legs.power_use * CELLRATE)
-		if(legs && legs.mech_turn_sound)
-			playsound(src.loc,legs.mech_turn_sound,40,1)
-		if(world.time + legs.turn_delay > next_mecha_move)
-			next_mecha_move = world.time + legs.turn_delay
-		set_dir(direction)
-		for(var/mob/pilot in pilots)
-			pilot.set_dir(direction)
-		if(istype(hardpoints[HARDPOINT_BACK], /obj/item/mecha_equipment/shield))
-			var/obj/item/mecha_equipment/shield/S = hardpoints[HARDPOINT_BACK]
-			if(S.aura)
-				S.aura.dir = direction
-				if(S.aura.dir == NORTH)
-					S.aura.layer = MOB_LAYER
-				else
-					S.aura.layer = ABOVE_HUMAN_LAYER
-		update_icon()
+		user.client.Process_Incorpmove(direction, src)
+	else
+		Move(target_loc, direction, 0, FALSE)
 
-	if(!turn_only)
-		var/turf/target_loc = get_step(src, direction)
-		if(!legs.can_move_on(loc, target_loc))
-			return
-		if(incorporeal_move)
-			if(legs && legs.mech_step_sound)
-				playsound(src.loc,legs.mech_step_sound,40,1)
-			use_cell_power(legs.power_use * CELLRATE)
-			user.client.Process_Incorpmove(direction, src)
-		else
-			var/new_direction = do_strafe ? user.facing_dir || direction : direction
-			Move(target_loc, new_direction)
+/mob/living/heavy_vehicle/proc/strafe_move(mob/user, direction)
+	if (!legs || !can_strafe(user))
+		return
 
-/mob/living/heavy_vehicle/Move()
-	if(..() && !istype(loc, /turf/space))
-		if(legs)
-			if(legs.mech_step_sound)
-				playsound(src.loc, legs.mech_step_sound, 40, TRUE)
-			use_cell_power(legs.power_use * CELLRATE)
+	// Get the tile in the direction.
+	var/turf/target_loc = get_step(src, direction)
+	if(!legs.can_move_on(loc, target_loc))
+		return
+
+	// Then send a move command
+	if(incorporeal_move)
+		if(legs.mech_step_sound)
+			playsound(src.loc,legs.mech_step_sound,40,1)
+		use_cell_power(legs.power_use * CELLRATE)
+		user.client.Process_Incorpmove(direction, src)
+	else
+		Move(target_loc, direction, 0, FALSE)
+
+/mob/living/heavy_vehicle/proc/rotate_by_angle(mob/living/user, direction)
+	if (!legs || !can_turn(user))
+		return
+
+	use_cell_power(legs.power_use * CELLRATE)
+	if(legs && legs.mech_turn_sound)
+		playsound(src.loc,legs.mech_turn_sound,40,1)
+
+	set_dir(direction)
+	for(var/mob/pilot in pilots)
+		pilot.set_dir(direction)
+	if(istype(hardpoints[HARDPOINT_BACK], /obj/item/mecha_equipment/shield))
+		var/obj/item/mecha_equipment/shield/S = hardpoints[HARDPOINT_BACK]
+		if(S.aura)
+			S.aura.dir = direction
+			if(S.aura.dir == NORTH)
+				S.aura.layer = MOB_LAYER
+			else
+				S.aura.layer = ABOVE_HUMAN_LAYER
+	update_icon()
+	Move(src.loc, direction, 0, TRUE)
+
+/mob/living/heavy_vehicle/Move(atom/newloc, direct, glide_size_override = 0, update_dir = TRUE)
+	// They shouldn't get to this proc without legs in the first place, but its okay to guard here.
+	if (!legs)
+		return
+	. = ..()
+	set_glide_size(DELAY_TO_GLIDE_SIZE(next_mecha_move - world.time))
+	if(. && !istype(loc, /turf/space))
+		if(legs.mech_step_sound)
+			playsound(src.loc, legs.mech_step_sound, 40, TRUE)
+		use_cell_power(legs.power_use * CELLRATE)
 	update_icon()
 
 /mob/living/heavy_vehicle/Post_Incorpmove()
@@ -368,7 +424,7 @@
 					become_remote()
 					qdel(attacking_item)
 				return
-			else if(attacking_item.ismultitool())
+			else if(attacking_item.tool_behaviour == TOOL_MULTITOOL)
 				if(hardpoints_locked)
 					to_chat(user, SPAN_WARNING("Hardpoint system access is disabled."))
 					return
@@ -385,7 +441,7 @@
 				to_chat(user, SPAN_WARNING("\The [src] has no hardpoint systems to remove."))
 				return
 
-			else if(attacking_item.iswrench())
+			else if(attacking_item.tool_behaviour == TOOL_WRENCH)
 				if(!remote && length(pilots))
 					to_chat(user, SPAN_WARNING("You can't disassemble \the [src] while it has a pilot!"))
 					return
@@ -411,7 +467,7 @@
 							new remote_type(get_turf(src))
 					dismantle()
 				return
-			else if(attacking_item.iswelder())
+			else if(attacking_item.tool_behaviour == TOOL_WELDER)
 				if(!getBruteLoss())
 					return
 				var/list/damaged_parts = list()
@@ -422,7 +478,7 @@
 				if(CanInteract(user, GLOB.physical_state) && !QDELETED(to_fix) && (to_fix in src) && to_fix.brute_damage)
 					to_fix.repair_brute_generic(attacking_item, user)
 				return
-			else if(attacking_item.iscoil())
+			else if(attacking_item.tool_behaviour == TOOL_CABLECOIL)
 				if(!getFireLoss())
 					return
 				var/list/damaged_parts = list()
@@ -433,7 +489,7 @@
 				if(CanInteract(user, GLOB.physical_state) && !QDELETED(to_fix) && (to_fix in src) && to_fix.burn_damage)
 					to_fix.repair_burn_generic(attacking_item, user)
 				return
-			else if(attacking_item.iscrowbar())
+			else if(attacking_item.tool_behaviour == TOOL_CROWBAR)
 				if(!maintenance_protocols)
 					to_chat(user, SPAN_WARNING("The cell compartment remains locked while maintenance protocols are disabled."))
 					return
@@ -471,7 +527,7 @@
 					playsound(user.loc, 'sound/items/Screwdriver.ogg', 50, 1)
 					user.visible_message(SPAN_NOTICE("\The [user] installs \the [body.cell] into \the [src]."), SPAN_NOTICE("You install \the [body.cell] into \the [src]."))
 				return
-			else if(istype(attacking_item, /obj/item/device/robotanalyzer))
+			else if(istype(attacking_item, /obj/item/robotanalyzer))
 				to_chat(user, SPAN_NOTICE("Diagnostic Report for \the [src]:"))
 				for(var/obj/item/mech_component/limb in list (head, body, arms, legs))
 					if(limb)
@@ -508,7 +564,7 @@
 	update_icon()
 	return
 
-/mob/living/heavy_vehicle/attack_generic(var/mob/user, var/damage, var/attack_message, var/armor_penetration, var/attack_flags, var/damage_type = DAMAGE_BRUTE)
+/mob/living/heavy_vehicle/attack_generic(mob/user, damage, attack_message, environment_smash, armor_penetration, attack_flags, damage_type)
 	if(!(user in pilots))
 		. = ..()
 
@@ -554,6 +610,8 @@ GLOBAL_DATUM_INIT(mech_state, /datum/ui_state/default, new())
 	if(!LAZYLEN(pilots))
 		return
 	if(!isliving(H))
+		return
+	if(src == H)
 		return
 
 	if(legs?.trample_damage)

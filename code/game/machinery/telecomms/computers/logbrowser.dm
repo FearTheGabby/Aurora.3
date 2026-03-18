@@ -28,7 +28,7 @@
 	if(stat & (BROKEN|NOPOWER))
 		return
 	user.set_machine(src)
-	var/dat = "<TITLE>Telecommunication Server Monitor</TITLE><center><b>Telecommunications Server Monitor</b></center>"
+	var/dat = "<center><b>Telecommunications Server Monitor</b></center>"
 
 	switch(screen)
 
@@ -64,7 +64,7 @@
 
 			dat += log_entries_to_text(user, SelectedServer)
 
-	user << browse(dat, "window=comm_monitor;size=575x400")
+	user << browse(HTML_SKELETON_TITLE("Telecommunications Server Monitor", dat), "window=comm_monitor;size=575x400")
 	onclose(user, "server_control")
 
 	temp = ""
@@ -148,7 +148,7 @@
 	return
 
 /obj/machinery/computer/telecomms/server/attackby(obj/item/attacking_item, mob/user)
-	if(attacking_item.isscrewdriver())
+	if(attacking_item.tool_behaviour == TOOL_SCREWDRIVER)
 		if(attacking_item.use_tool(src, user, 20, volume = 50))
 			if (src.stat & BROKEN)
 				to_chat(user, SPAN_NOTICE("The broken glass falls out."))
@@ -180,7 +180,7 @@
 	if(!emagged)
 		playsound(src.loc, 'sound/effects/sparks4.ogg', 75, 1)
 		emagged = 1
-		to_chat(user, SPAN_NOTICE("You you disable the security protocols"))
+		to_chat(user, SPAN_NOTICE("You disable the security protocols."))
 		src.updateUsrDialog()
 		return 1
 

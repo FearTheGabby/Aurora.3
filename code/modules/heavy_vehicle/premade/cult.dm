@@ -2,7 +2,7 @@
 /mob/living/heavy_vehicle/premade/cult
 	name = "Daemon Exosuit"
 	desc = "An unholy construction, a mecha ripped from the jaws of the underworld, here to wreak havoc on the living."
-	icon_state = "durand"
+	icon_state = "cult"
 
 	e_head = /obj/item/mech_component/sensors/cult
 	e_body = /obj/item/mech_component/chassis/cult
@@ -37,6 +37,11 @@
 	max_damage = 90
 	power_use = 2500
 	trample_damage = 45
+
+	// Uniquely increases speed when damaged. Fragile, but good for melee.
+	// It can become faster than a light mech, but only when on the verge of death.
+	damaged_delay = 4
+	damaged_delay_slope = -1
 
 /obj/item/mech_component/sensors/cult
 	name = "daemon sensors"

@@ -45,7 +45,7 @@
 		. += "You can see \a [modulator] attached."
 
 /obj/item/gun/energy/laser/prototype/attackby(obj/item/attacking_item, mob/user)
-	if(!attacking_item.isscrewdriver())
+	if(attacking_item.tool_behaviour != TOOL_SCREWDRIVER)
 		return ..()
 	to_chat(user, "You disassemble \the [src].")
 	disassemble(user)
@@ -107,7 +107,7 @@
 
 	fire_delay = capacitor.fire_delay
 	max_shots = capacitor.shots
-	power_supply.maxcharge = max_shots*charge_cost
+
 	dispersion = focusing_lens.dispersion
 	accuracy = focusing_lens.accuracy
 	burst += focusing_lens.burst
@@ -116,10 +116,11 @@
 	if(gun_mods.len)
 		handle_mod()
 
-	fire_delay_wielded = min(0,(fire_delay - fire_delay*3))
+	max_shots = max_shots * burst
+	power_supply.maxcharge = max_shots*charge_cost
+	fire_delay_wielded = fire_delay * 0.75
 	accuracy_wielded = accuracy + accuracy/4
 	scoped_accuracy = accuracy_wielded + accuracy/4
-	max_shots = max_shots * burst
 	w_class = gun_type
 	reliability = max(reliability, 1)
 
@@ -146,7 +147,7 @@
 			if(MOD_SILENCE)
 				suppressed = TRUE
 			if(MOD_NUCLEAR_CHARGE)
-				self_recharge = 1
+				self_recharge = TRUE
 				criticality *= 2
 		fire_delay *= modifier.fire_delay
 		reliability += modifier.reliability
@@ -160,7 +161,7 @@
 		if(modifier.scope_name)
 			zoomdevicename = modifier.scope_name
 
-/obj/item/gun/energy/laser/prototype/consume_next_projectile(var/bypass_degrade = FALSE)
+/obj/item/gun/energy/laser/prototype/consume_next_projectile(var/mob/user, var/bypass_degrade = FALSE)
 	if(!power_supply)
 		return null
 	if(!ispath(projectile_type))
@@ -177,17 +178,17 @@
 	for(var/obj/item/laser_components/modifier/modifier in gun_mods)
 		damage_coeff *= modifier.damage
 	if(burst > 1)
-		A.damage = A.damage/(burst - 1)
+		A.damage = A.damage/(max(1, burst - 1)) //Damage is divided by the number of shots
 	damage_coeff *= modulator.damage
 	A.damage *= damage_coeff
-	A.damage = min(A.damage, 60) //let's not get too ridiculous here
+	A.damage = min(A.damage, 60) //Caps the maximum damage one shot can do, this matches the laser cannon
 	if(!bypass_degrade)
-		for(var/obj/item/laser_components/modifier/modifier in gun_mods)
-			if(prob((gun_mods.len * 10 * damage_coeff)/(max(1,(burst - 1)))))
+		for(var/obj/item/laser_components/modifier/modifier in gun_mods) //This repeats for EVERY MOD, fail chance goes up quadratically with the number of mods
+			if(prob((gun_mods.len * 2 * damage_coeff)/(max(1,(burst - 1)))))
 				capacitor.degrade(modifier.malus)
-			if(prob((gun_mods.len * 10 * damage_coeff)/(max(1,(burst - 1)))))
+			if(prob((gun_mods.len * 2 * damage_coeff)/(max(1,(burst - 1)))))
 				focusing_lens.degrade(modifier.malus)
-			if(prob((33 + capacitor.damage)/(max(1,(burst - 1)))))
+			if(prob((33 + capacitor.damage)/(max(1,(burst - 1))))) //Firing a gun with a damaged capacitor risks arcing to other components, damaging them
 				modifier.degrade(1)
 
 	updatetype(ismob(loc) ? loc : null)
@@ -217,11 +218,11 @@
 		pin = null
 	switch(origin_chassis)
 		if(CHASSIS_SMALL)
-			new /obj/item/device/laser_assembly(A)
+			new /obj/item/laser_assembly(A)
 		if(CHASSIS_MEDIUM)
-			new /obj/item/device/laser_assembly/medium(A)
+			new /obj/item/laser_assembly/medium(A)
 		if(CHASSIS_LARGE)
-			new /obj/item/device/laser_assembly/large(A)
+			new /obj/item/laser_assembly/large(A)
 	qdel(src)
 
 /obj/item/gun/energy/laser/prototype/small_fail(var/mob/user)
@@ -253,7 +254,7 @@
 		toggle_wield(usr)
 
 /obj/item/gun/energy/laser/prototype/verb/scope()
-	set category = "Object"
+	set category = "Object.Held"
 	set name = "Use Scope"
 	set src in usr
 
@@ -293,7 +294,7 @@
 
 /obj/item/gun/energy/laser/prototype/verb/rename_gun()
 	set name = "Name Prototype"
-	set category = "Object"
+	set category = "Object.Held"
 	set desc = "Name your invention so that its glory might be eternal"
 	set src in usr
 
@@ -311,7 +312,7 @@
 
 /obj/item/gun/energy/laser/prototype/verb/describe_gun()
 	set name = "Describe Prototype"
-	set category = "Object"
+	set category = "Object.Held"
 	set desc = "Describe your invention so that its glory might be eternal"
 	set src in usr
 

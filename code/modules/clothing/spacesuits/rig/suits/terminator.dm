@@ -2,7 +2,7 @@
 	name = "\improper Purpose combat layer"
 	desc = "An unknown, sleek mechanical construction that doesn't conform to any technology, culture, or even creature you know. \
 			It seems largely impervious to any wear and tear."
-	icon = 'icons/clothing/rig/hunter_killer.dmi'
+	icon = 'icons/obj/item/clothing/rig/hunter_killer.dmi'
 	icon_state = "hunterkiller_rig"
 	suit_type = "synthetic exoskeleton"
 	armor = list(
@@ -20,9 +20,9 @@
 	has_sealed_state = TRUE
 
 	allowed = list(
-		/obj/item/device/flashlight,
+		/obj/item/flashlight,
 		/obj/item/tank,
-		/obj/item/device/suit_cooling_unit,
+		/obj/item/suit_cooling_unit,
 		/obj/item/gun,
 		/obj/item/ammo_magazine,
 		/obj/item/ammo_casing,

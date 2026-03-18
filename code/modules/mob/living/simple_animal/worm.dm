@@ -69,11 +69,16 @@
 /mob/living/simple_animal/space_worm/Destroy() //if a chunk a destroyed, make a new worm out of the split halves
 	if(previous)
 		previous.Detach()
+	if(next && next.previous == src)
+		next.previous = null
+	previous = null
+	next = null
 	return ..()
 
 /mob/living/simple_animal/space_worm/Move()
 	var/attachementNextPosition = loc
-	if(..())
+	. = ..()
+	if(.)
 		if(previous)
 			previous.Move(attachementNextPosition)
 		update_icon()
@@ -126,6 +131,11 @@
 	return
 
 /mob/living/simple_animal/space_worm/proc/Detach(die = 0)
+	if(QDELETED(src))
+		previous = null
+		next = null
+		return
+
 	var/mob/living/simple_animal/space_worm/newHead = new /mob/living/simple_animal/space_worm/head(loc,0)
 	var/mob/living/simple_animal/space_worm/newHeadPrevious = previous
 

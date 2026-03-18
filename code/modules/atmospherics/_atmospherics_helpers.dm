@@ -440,7 +440,7 @@
 		var/transfer_heat_capacity = source.heat_capacity()*estimate_moles/source_total_moles
 		air_temperature = (sink.temperature*sink_heat_capacity  + source.temperature*transfer_heat_capacity) / (sink_heat_capacity + transfer_heat_capacity)
 
-	//get the number of moles that would have to be transfered to bring sink to the target pressure
+	//get the number of moles that would have to be transferred to bring sink to the target pressure
 	return pressure_delta*output_volume/(air_temperature * R_IDEAL_GAS_EQUATION)
 
 //Calculates the APPROXIMATE amount of moles that would need to be transferred to bring source and sink to the same pressure
@@ -451,7 +451,7 @@
 	var/source_volume = source.volume * source.group_multiplier
 	var/sink_volume = sink.volume * sink.group_multiplier
 
-	var/source_pressure = source.return_pressure()
-	var/sink_pressure = sink.return_pressure()
+	var/source_pressure = XGM_PRESSURE(source)
+	var/sink_pressure = XGM_PRESSURE(sink)
 
 	return (source_pressure - sink_pressure)/(R_IDEAL_GAS_EQUATION * (source.temperature/source_volume + sink.temperature/sink_volume))

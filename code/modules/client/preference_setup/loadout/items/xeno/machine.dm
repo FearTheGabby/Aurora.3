@@ -93,7 +93,7 @@
 
 /datum/gear/ears/headlights
 	display_name = "headlights"
-	path = /obj/item/device/flashlight/headlights
+	path = /obj/item/flashlight/headlights
 	cost = 2
 	whitelisted = list(SPECIES_IPC, SPECIES_IPC_G1, SPECIES_IPC_G2, SPECIES_IPC_XION, SPECIES_IPC_ZENGHU, SPECIES_IPC_BISHOP, SPECIES_IPC_SHELL)
 	sort_category = "Xenowear - IPC"
@@ -268,7 +268,7 @@ ABSTRACT_TYPE(/datum/gear/augment/machine)
 	path = /obj/item/clothing/under/goldendeep/hoplan
 	whitelisted = list(SPECIES_IPC, SPECIES_IPC_G1, SPECIES_IPC_G2, SPECIES_IPC_XION, SPECIES_IPC_ZENGHU, SPECIES_IPC_BISHOP, SPECIES_IPC_SHELL)
 	sort_category = "Xenowear - IPC"
-	allowed_roles = list("Consular Officer", "Diplomatic Aide")
+	allowed_roles = list("Consular Officer", "Diplomatic Aide", "Diplomatic Bodyguard")
 	culture_restriction = list(/singleton/origin_item/culture/golden_deep)
 
 /datum/gear/head/goldendeephoplan
@@ -278,7 +278,7 @@ ABSTRACT_TYPE(/datum/gear/augment/machine)
 	flags = GEAR_HAS_NAME_SELECTION | GEAR_HAS_DESC_SELECTION
 	whitelisted = list(SPECIES_IPC, SPECIES_IPC_G1, SPECIES_IPC_G2, SPECIES_IPC_XION, SPECIES_IPC_ZENGHU, SPECIES_IPC_BISHOP, SPECIES_IPC_SHELL)
 	sort_category = "Xenowear - IPC"
-	allowed_roles = list("Consular Officer", "Diplomatic Aide")
+	allowed_roles = list("Consular Officer", "Diplomatic Aide", "Diplomatic Bodyguard")
 	culture_restriction = list(/singleton/origin_item/culture/golden_deep)
 
 /datum/gear/uniform/goldendeepporter
@@ -339,4 +339,10 @@ ABSTRACT_TYPE(/datum/gear/augment/machine)
 	allowed_roles = list("Research Director", "Scientist", "Xenoarchaeologist", "Xenobiologist", "Xenobotanist", "Research Intern", "Science Personnel")
 	origin_restriction = list(/singleton/origin_item/origin/ipc_assunzione)
 	whitelisted = list(SPECIES_IPC, SPECIES_IPC_G1, SPECIES_IPC_G2, SPECIES_IPC_XION, SPECIES_IPC_ZENGHU, SPECIES_IPC_BISHOP, SPECIES_IPC_SHELL)
+	sort_category = "Xenowear - IPC"
+
+/datum/gear/accessory/goldendeeppassport
+	display_name = "golden deep passport"
+	path = /obj/item/clothing/accessory/badge/passport/goldendeep
+	whitelisted = list(SPECIES_IPC, SPECIES_IPC_G1, SPECIES_IPC_G2, SPECIES_IPC_XION, SPECIES_IPC_ZENGHU, SPECIES_IPC_BISHOP, SPECIES_IPC_SHELL, SPECIES_HUMAN, SPECIES_HUMAN_OFFWORLD)
 	sort_category = "Xenowear - IPC"

@@ -1,7 +1,7 @@
 /mob/living/heavy_vehicle/premade/heavy
 	name = "Heavy exosuit"
 	desc = "A heavily armored combat exosuit."
-	icon_state = "durand"
+	icon_state = "heavy"
 
 	e_head = /obj/item/mech_component/sensors/heavy
 	e_body = /obj/item/mech_component/chassis/heavy/cell
@@ -33,6 +33,7 @@
 	max_damage = 200
 	power_use = 2500
 	trample_damage = 45
+	damaged_delay = 5
 
 /obj/item/mech_component/sensors/heavy
 	name = "heavy sensors"

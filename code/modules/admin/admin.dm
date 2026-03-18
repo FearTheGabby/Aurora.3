@@ -48,6 +48,8 @@ var/global/enabled_spooking = 0
 		to_chat(usr, "Error: you are not an admin!")
 		return
 
+	var/ui_scale = owner.prefs?.ui_scale
+
 	var/body = "<html><head><title>Options for [M.key]</title></head>"
 	body += "<body>Options panel for <b>[M]</b>"
 	if(M.client)
@@ -219,7 +221,11 @@ var/global/enabled_spooking = 0
 		</body></html>
 	"}
 
-	usr << browse(body, "window=adminplayeropts;size=550x515")
+	var/window_size = "size=550x515"
+	if(owner.window_scaling && ui_scale)
+		window_size = "size=[550 * owner.window_scaling]x[515 * owner.window_scaling]"
+
+	usr << browse(body, "window=adminplayeropts;[window_size]")
 	feedback_add_details("admin_verb","SPP") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 
@@ -281,7 +287,7 @@ var/global/enabled_spooking = 0
 			if(index == page)
 				dat += "</b>"
 
-	usr << browse(dat, "window=player_notes;size=400x400")
+	usr << browse(HTML_SKELETON(dat), "window=player_notes;size=400x400")
 
 
 /datum/admins/proc/player_has_info(var/key as text)
@@ -338,7 +344,7 @@ var/global/enabled_spooking = 0
 		dat += "<A href='byond://?src=[REF(src)];add_player_info=[key]'>Add Comment</A><br>"
 
 		dat += "</body></html>"
-		show_browser(usr, dat, "window=adminplayerinfo;size=480x480")
+		show_browser(usr, HTML_SKELETON(dat), "window=adminplayerinfo;size=480x480")
 	else
 		show_notes_sql(key)
 
@@ -592,13 +598,13 @@ var/global/enabled_spooking = 0
 				dat+="No comments on this story yet!</BR>"
 			else
 				for(var/datum/feed_comment/COMMENT in src.admincaster_viewing_message.comments)
-					dat+="<BLOCKQUOTE style=\"padding:2px 4px;border-left:4px #797979 solid;\"><B>\[[world.time]\] [COMMENT.author]:</B>[COMMENT.message]<BR><A href='byond://?src=[REF(src)];ac_censorcomment=1;ac_comment=[REF(COMMENT)]>Censor Comment</A></BLOCKQUOTE>"
+					dat+="<BLOCKQUOTE style=\"padding:2px 4px;border-left:4px #797979 solid;\"><B>\[[world.time]\] [COMMENT.author]:</B>[COMMENT.message]<BR><A href='byond://?src=[REF(src)];ac_censorcomment=1;ac_comment=[REF(COMMENT)]'>Censor Comment</A></BLOCKQUOTE>"
 			dat+="<A href='byond://?src=[REF(src)];ac_setScreen=[9]'>Return</A>"
 		else
 			dat+="Please report this on GitHub, along with what you did to make this appear."
 
 
-	usr << browse(dat, "window=admincaster_main;size=400x600")
+	usr << browse(HTML_SKELETON(dat), "window=admincaster_main;size=400x600")
 	onclose(usr, "admincaster_main")
 
 
@@ -618,7 +624,7 @@ var/global/enabled_spooking = 0
 				dat += "<tr><td>[ckey] - [ban[2]] - (<a href='byond://?src=[REF(src)];jobban_tgt=[ckey];jobban_job=[job];'>unban</a>)</td></tr>"
 
 	dat += "</table>"
-	usr << browse(dat, "window=ban;size=400x400")
+	usr << browse(HTML_SKELETON(dat), "window=ban;size=400x400")
 
 /datum/admins/proc/Game()
 	if(!check_rights(0))	return
@@ -640,7 +646,7 @@ var/global/enabled_spooking = 0
 		<A href='byond://?src=[REF(src)];vsc=default'>Choose a default ZAS setting</A><br>
 		"}
 
-	usr << browse(dat, "window=admin2;size=210x280")
+	usr << browse(HTML_SKELETON(dat), "window=admin2;size=210x280")
 	return
 
 /datum/admins/proc/Secrets()
@@ -658,7 +664,7 @@ var/global/enabled_spooking = 0
 				continue
 			dat += "<A href='byond://?src=[REF(src)];admin_secrets=[REF(item)]'>[item.name()]</A><BR>"
 		dat += "<BR>"
-	usr << browse(dat, "window=secrets")
+	usr << browse(HTML_SKELETON(dat), "window=secrets")
 	return
 
 
@@ -695,9 +701,9 @@ var/global/enabled_spooking = 0
 	if (!check_rights(R_ADMIN))
 		return
 
-	var/message = tgui_input_text(usr, "Enter a global message to send.", "Admin Announce", multiline = TRUE)
+	var/message = tgui_input_text(usr, "Enter a global message to send.", "Admin Announce", multiline = TRUE, encode = FALSE)
 	if(message)
-		if(!check_rights(R_SERVER, 0))
+		if(!check_rights(R_ADMIN, 0))
 			message = sanitize(message, 500, extra = 0)
 		message = replacetext(message, "\n", "<br>") // required since we're putting it in a <p> tag
 		to_world("<span class=notice><b>[usr.client.holder.fakekey ? "Administrator" : usr.key] Announces:</b><p style='text-indent: 50px'>[message]</p></span>")
@@ -808,8 +814,8 @@ var/global/enabled_spooking = 0
 	set desc="Start the round RIGHT NOW"
 	set name="Start Now"
 	if(!MC_RUNNING())
-		alert("Unable to start the game as it is not set up.")
-		return
+		to_chat(usr, SPAN_NOTICE("The round will be started automatically as soon as ready."))
+		UNTIL(SSticker?.current_state == GAME_STATE_PREGAME)
 	if(SSticker.current_state == GAME_STATE_PREGAME)
 		SSticker.current_state = GAME_STATE_SETTING_UP
 		log_admin("[usr.key] has started the game.")
@@ -1139,7 +1145,7 @@ var/global/enabled_spooking = 0
 		out += " None."
 	out += " <a href='byond://?src=[REF(SSticker.mode)];add_antag_type=1'>\[+\]</a><br/>"
 
-	usr << browse(out, "window=edit_mode[src]")
+	usr << browse(HTML_SKELETON(out), "window=edit_mode[src]")
 	feedback_add_details("admin_verb","SGM")
 
 
@@ -1314,7 +1320,7 @@ var/global/enabled_spooking = 0
 
 /datum/admins/proc/paralyze_mob(mob/living/H as mob)
 	set category = "Admin"
-	set name = "Toggle Wind"
+	set name = "Toggle Winded"
 	set desc = "Paralyzes a player. Or unparalyses them."
 
 	toggle_wind_paralysis(H, usr)
@@ -1393,15 +1399,14 @@ var/global/enabled_spooking = 0
 /datum/admins/proc/set_odyssey()
 	set name = "Set Odyssey Type"
 	set category = "Special Verbs"
+	if (!SSodyssey.initialized)
+		to_chat(usr, SPAN_WARNING("You must wait for the server to finish initializing."))
+		return
 
 	if(!check_rights(R_ADMIN))
 		return
 
-	if(!SSticker.mode || !istype(SSticker.mode, /datum/game_mode/odyssey))
-		to_chat(usr, SPAN_WARNING("The gamemode either does not exist, or is not Odyssey."))
-		return
-
-	if(SSticker.current_state != GAME_STATE_SETTING_UP)
+	if(SSticker.current_state > GAME_STATE_SETTING_UP)
 		to_chat(usr, SPAN_WARNING("You need to use this verb while the game is still setting up!"))
 		return
 
@@ -1423,5 +1428,24 @@ var/global/enabled_spooking = 0
 
 	SSodyssey.scenario = chosen_scenario
 	log_and_message_admins("has manually set the Odyssey to [chosen_scenario.name]", usr)
-	feedback_add_details("admin_verb","SEST") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
+	feedback_add_details("admin_verb","SEOT") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
+/datum/admins/proc/set_odyssey_canonicity()
+	set name = "Set Odyssey Canonicity"
+	set category = "Special Verbs"
+
+	if(!check_rights(R_ADMIN))
+		return
+
+	if(!SSodyssey.scenario)
+		to_chat(usr, SPAN_WARNING("There needs to be an Odyssey selected first! Use the Set Odyssey Type verb."))
+		return
+
+	var/canonicity = tgui_input_list(usr, "Set the Odyssey canonicity.", "Set Odyssey Canonicity", list(SCENARIO_TYPE_CANON, SCENARIO_TYPE_NONCANON))
+	if(!canonicity)
+		return
+
+	SSodyssey.scenario.scenario_type = canonicity
+	to_world(FONT_LARGE(EXAMINE_BLOCK_ODYSSEY(SPAN_NOTICE("The scenario canonicity has been changed to [SPAN_BOLD(canonicity)] by an administrator."))))
+	log_and_message_admins("has set the Odyssey canonicity to [canonicity]", usr)
+	feedback_add_details("admin_verb","SEOC") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!

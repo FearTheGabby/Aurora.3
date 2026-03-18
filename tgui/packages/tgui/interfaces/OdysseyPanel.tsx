@@ -35,7 +35,8 @@ export const OdysseyPanel = (props, context) => {
               disabled={!data.is_storyteller}
               onClick={() => act('edit_scenario_name')}
             />
-          }>
+          }
+        >
           {data.scenario_desc}{' '}
           <Button
             icon="pencil"
@@ -50,7 +51,8 @@ export const OdysseyPanel = (props, context) => {
               as="span"
               color={
                 data.scenario_canonicity === 'Non-Canon' ? 'orange' : 'green'
-              }>
+              }
+            >
               {data.scenario_canonicity}
             </Box>{' '}
             scenario. Please remember that the one thing you cannot change about
@@ -77,7 +79,13 @@ export const RoleDisplay = (props, context) => {
         You are not beholden to following the role names and descriptions. You
         can use their equipment and change up the premises or what your
         objective is as you like! These are just guidelines in the end, or how
-        the developer envisioned the story. Your creativity is the limit!
+        the author envisioned the story. Your creativity is the limit!
+      </NoticeBox>
+      <NoticeBox color="grey">
+        You are not locked into the first outfit you equip, you can try
+        different outfits. Some roles also have outfits with randomly picked
+        items, and you can equip the same outfit multiple times to see the
+        different variations.
       </NoticeBox>
       {data.scenario_roles.map((role) => (
         <Section
@@ -112,7 +120,8 @@ export const RoleDisplay = (props, context) => {
             ) : (
               ''
             )
-          }>
+          }
+        >
           {role.desc}{' '}
           {data.is_storyteller ? (
             <Button

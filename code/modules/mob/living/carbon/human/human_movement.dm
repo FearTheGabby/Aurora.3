@@ -44,8 +44,8 @@
 	if (!(species.flags & NO_COLD_SLOWDOWN))	// Bugs and machines don't move slower when cold.
 		if((mutations & FAT))
 			tally += 1.5
-		if (bodytemperature < 283.222)
-			tally += (283.222 - bodytemperature) / 10 * 1.75
+		if (bodytemperature < species.cold_discomfort_level)
+			tally += (species.cold_discomfort_level - bodytemperature) / 10 * 1.75
 
 	tally += max(2 * stance_damage, 0) //damaged/missing feet or legs is slow
 	if((mutations & mRun))
@@ -54,6 +54,11 @@
 	if(isitem(pulling) && !(species.flags & NO_EQUIP_SPEEDMODS))
 		var/obj/item/P = pulling
 		tally += P.slowdown
+
+	var/obj/item/grab/grab = get_type_in_hands(/obj/item/grab)
+	if(istype(grab) && ishuman(grab.affecting))
+		if(grab.affecting.mob_weight > get_mob_strength())
+			tally += grab.affecting.mob_weight - get_mob_strength()
 
 	var/turf/T = get_turf(src)
 	if(T) // changelings don't get movement costs
@@ -117,9 +122,7 @@
 /mob/living/carbon/human/set_dir(var/new_dir, ignore_facing_dir = FALSE)
 	. = ..()
 	if(. && tail_style)
-		update_tail_showing(1)
-	if(lying)
-		update_icon(forceDirUpdate = TRUE)
+		update_tail_showing(!lying)
 
 /mob/living/carbon/human/Move()
 	. = ..()
@@ -138,9 +141,9 @@
 			footsound = T.footstep_sound
 
 	if (client)
-		var/turf/B = GET_TURF_ABOVE(T)
+		var/turf/T1 = GET_TURF_ABOVE(T)
 		if(up_hint)
-			up_hint.icon_state = "uphint[(B ? !!B.is_hole : 0)]"
+			up_hint.icon_state = "uphint[(T1 ? !!isopenturf(T1) : 0)]"
 
 	if (!stat && !lying)
 		if ((x == last_x && y == last_y) || !footsound)
@@ -188,4 +191,4 @@
 		var/mob/living/carbon/human/H = pulling
 		if(H.species.slowdown > species.slowdown)
 			. += H.species.slowdown - species.slowdown
-		// . += H.ClothesSlowdown()
+

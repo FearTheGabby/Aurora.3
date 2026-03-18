@@ -38,7 +38,7 @@
 
 /obj/machinery/computer/ship/sensors/terminal
 	name = "sensors terminal"
-	icon = 'icons/obj/machinery/modular_terminal.dmi'
+	icon = 'icons/obj/modular_computers/modular_terminal.dmi'
 	icon_screen = "teleport"
 	icon_keyboard = "teleport_key"
 	icon_keyboard_emis = "teleport_key_mask"
@@ -392,7 +392,7 @@
 		if(direction != "clear")
 			security_announcement.Announce("Enemy fire inbound, enemy fire inbound! [sanitizeSafe(direction)]!", "Brace for shock!", sound('sound/mecha/internaldmgalarm.ogg', volume = 90), 0)
 		else
-			security_announcement.Announce("No fire is incoming at the current moment, resume damage control.", "Space clear!", sound('sound/misc/announcements/security_level_old.ogg'), 0)
+			security_announcement.Announce("No fire is incoming at the current moment, resume damage control.", "Space clear!", sound('sound/ai/announcements/security_level_old.ogg'), 0)
 		return TRUE
 
 /obj/machinery/shipsensors
@@ -439,7 +439,7 @@
 	if(default_part_replacement(user, attacking_item))
 		return TRUE
 	var/damage = max_health - health
-	if(damage && attacking_item.iswelder())
+	if(damage && attacking_item.tool_behaviour == TOOL_WELDER)
 
 		var/obj/item/weldingtool/WT = attacking_item
 
@@ -462,7 +462,7 @@
 	var/turf/T=get_turf(src)
 	if(istype(T))
 		var/datum/gas_mixture/environment = T.return_air()
-		if(environment && environment.return_pressure() > MINIMUM_PRESSURE_DIFFERENCE_TO_SUSPEND)
+		if(SAFE_XGM_PRESSURE(environment) > MINIMUM_PRESSURE_DIFFERENCE_TO_SUSPEND)
 			return 0
 	return 1
 
@@ -496,14 +496,14 @@
 	if(heat_percentage > 85)
 		AddOverlays("sensors-effect-hot")
 
-/obj/machinery/shipsensors/get_examine_text(mob/user, distance, is_adjacent, infix, suffix)
-	. = ..()
+/obj/machinery/shipsensors/condition_hints(mob/user, distance, is_adjacent)
+	. += ..()
 	if(health <= 0)
 		. += "\The [src] is wrecked."
 	else if(health < max_health * 0.25)
 		. += SPAN_DANGER("\The [src] looks like it's about to break!")
 	else if(health < max_health * 0.5)
-		. += SPAN_DANGER("\The [src] looks seriously damaged!")
+		. += SPAN_ALERT("\The [src] looks seriously damaged!")
 	else if(health < max_health * 0.75)
 		. += "\The [src] shows signs of damage!"
 
@@ -583,7 +583,7 @@
 /obj/machinery/shipsensors/weak
 	heat_reduction = 1.7 // Can sustain range 4
 	max_range = 7
-	desc = "Miniturized gravity scanner with various other sensors, used to detect irregularities in surrounding space. Can only run in vacuum to protect delicate quantum BS elements."
+	desc = "Miniaturized gravity scanner with various other sensors, used to detect irregularities in surrounding space. Can only run in vacuum to protect delicate quantum BS elements."
 	deep_scan_range = 0
 	component_types = list(
 		/obj/item/circuitboard/shipsensors/weak,

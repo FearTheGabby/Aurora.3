@@ -41,6 +41,7 @@
 	return INITIALIZE_HINT_LATELOAD
 
 /obj/machinery/computer/message_monitor/LateInitialize()
+	. = ..()
 	//If the server isn't linked to a server, and there's a server available, default it to the first one in the list.
 	if(!linkedServer)
 		for(var/obj/machinery/telecomms/message_server/S in SSmachinery.all_telecomms)
@@ -57,7 +58,7 @@
 		return ..()
 	if(!istype(user))
 		return TRUE
-	if(attacking_item.isscrewdriver() && emag)
+	if(attacking_item.tool_behaviour == TOOL_SCREWDRIVER && emag)
 		//Stops people from just unscrewing the monitor and putting it back to get the console working again.
 		to_chat(user, SPAN_WARNING("It is too hot to mess with!"))
 		return TRUE
@@ -98,7 +99,7 @@
 	//If the computer is being hacked or is emagged, display the reboot message.
 	if(hacking || emag)
 		message = rebootmsg
-	var/dat = "<head><title>Message Monitor Console</title></head><body>"
+	var/dat = "<body>"
 	dat += "<center><h2>Message Monitor Console</h2></center><hr>"
 	dat += "<center><h4><font color='blue'[message]</h5></center>"
 
@@ -247,7 +248,7 @@
 
 	dat += "</body>"
 	message = defaultmsg
-	user << browse(dat, "window=message;size=700x700")
+	user << browse(HTML_SKELETON_TITLE("Message Monitor Console", dat), "window=message;size=700x700")
 	onclose(user, "message")
 	return
 

@@ -187,7 +187,7 @@
 		out += "None."
 	out += "<br><a href='byond://?src=[REF(src)];obj_add=1'>\[add\]</a>"
 	out += "<b>Ambitions:</b> [ambitions ? ambitions : "None"] <a href='byond://?src=[REF(src)];amb_edit=[REF(src)]'>\[edit\]</a></br>"
-	usr << browse(out, "window=edit_memory[src]")
+	usr << browse(HTML_SKELETON(out), "window=edit_memory[src]")
 
 /datum/mind/Topic(href, href_list)
 	if(!check_rights(R_ADMIN))	return
@@ -433,7 +433,7 @@
 				memory = null//Remove any memory they may have had.
 			if("crystals")
 				if (usr.client.holder.rights & R_FUN)
-					var/obj/item/device/uplink/hidden/suplink = find_syndicate_uplink()
+					var/obj/item/uplink/hidden/suplink = find_syndicate_uplink()
 					var/crystals
 					if (suplink)
 						crystals = suplink.telecrystals + suplink.bluecrystals
@@ -470,7 +470,7 @@
 	return null
 
 /datum/mind/proc/take_uplink()
-	var/obj/item/device/uplink/hidden/H = find_syndicate_uplink()
+	var/obj/item/uplink/hidden/H = find_syndicate_uplink()
 	if(H)
 		qdel(H)
 
@@ -554,6 +554,15 @@
 
 //AI
 /mob/living/silicon/ai/mind_initialize()
+	..()
+	mind.assigned_role = "AI"
+
+//AI Shell / AI Spiderbot
+/mob/living/silicon/robot/shell/mind_initialize()
+	..()
+	mind.assigned_role = "AI"
+
+/mob/living/simple_animal/spiderbot/ai/mind_initialize()
 	..()
 	mind.assigned_role = "AI"
 

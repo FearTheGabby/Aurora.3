@@ -1,7 +1,6 @@
 /obj/item/clipboard
 	name = "clipboard"
 	desc = "When other writing surfaces are unavailable."
-	desc_info = "You can store a pen in this."
 	icon = 'icons/obj/bureaucracy.dmi'
 	icon_state = "clipboard"
 	item_state = "clipboard"
@@ -14,6 +13,10 @@
 	var/list/r_contents = list()
 	var/ui_open = FALSE
 	slot_flags = SLOT_BELT
+
+/obj/item/clipboard/mechanics_hints(mob/user, distance, is_adjacent)
+	. += ..()
+	. += "You can store a pen in this."
 
 /obj/item/clipboard/Initialize()
 	. = ..()
@@ -59,10 +62,10 @@
 		r_contents = reverselist(contents)
 		to_chat(user, SPAN_NOTICE("You clip the [attacking_item] onto \the [src]."))
 
-	else if(istype(toppaper) && attacking_item.ispen())
+	else if(istype(toppaper) && attacking_item.tool_behaviour == TOOL_PEN)
 		toppaper.attackby(attacking_item, user)
 
-	else if(attacking_item.ispen())
+	else if(attacking_item.tool_behaviour == TOOL_PEN)
 		add_pen(user)
 
 	if(ui_open)
@@ -73,7 +76,7 @@
 	return
 
 /obj/item/clipboard/attack_self(mob/user as mob)
-	var/dat = "<title>Clipboard</title>"
+	var/dat = ""
 	if(haspen)
 		dat += "<A href='byond://?src=[REF(src)];pen=1'>Remove Pen</A><BR><HR>"
 	else
@@ -93,7 +96,7 @@
 	for(var/obj/item/photo/Ph in r_contents)
 		dat += "<A href='byond://?src=[REF(src)];remove=[REF(Ph)]'>Remove</A> <A href='byond://?src=[REF(src)];rename=[REF(Ph)]'>Rename</A> - <A href='byond://?src=[REF(src)];look=[REF(Ph)]'>[Ph.name]</A><BR>"
 
-	user << browse(dat, "window=clipboard")
+	user << browse(HTML_SKELETON_TITLE("Clipboard", dat), "window=clipboard")
 	if(!ui_open)
 		ui_open = TRUE
 	onclose(user, "clipboard")
@@ -103,7 +106,7 @@
 /obj/item/clipboard/proc/add_pen(mob/user)
 	if(!haspen)
 		var/obj/item/pen/W = user.get_active_hand()
-		if(W.ispen())
+		if(W.tool_behaviour == TOOL_PEN)
 			user.drop_from_inventory(W,src)
 			haspen = W
 			to_chat(user, SPAN_NOTICE("You slot the pen into \the [src]."))
@@ -133,7 +136,7 @@
 
 				var/obj/item/I = usr.get_active_hand()
 
-				if(I.ispen())
+				if(I.tool_behaviour == TOOL_PEN)
 					P.attackby(I, usr)
 				else if (haspen)
 					P.attackby(haspen, usr)

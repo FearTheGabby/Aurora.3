@@ -13,11 +13,11 @@ emp_act
 	if(species_check)
 		return species_check
 
-	if(!is_physically_disabled())
+	if(!MOB_IS_INCAPACITATED(INCAPACITATION_DISABLED))
 		var/deflection_chance = check_martial_deflection_chance()
 		if(prob(deflection_chance))
 			visible_message(SPAN_WARNING("\The [src] deftly dodges \the [hitting_projectile]!"), SPAN_NOTICE("You deftly dodge \the [hitting_projectile]!"))
-			playsound(src, /singleton/sound_category/bulletflyby_sound, 75, TRUE)
+			playsound(src, SFX_BULLET_MISS, 75, TRUE)
 			return BULLET_ACT_FORCE_PIERCE
 
 	def_zone = check_zone(def_zone)
@@ -165,13 +165,24 @@ emp_act
 	return BULLET_ACT_HIT
 
 /mob/living/carbon/human/emp_act(severity)
+	/*
+		OK LISTEN UP this is absolutely shitcode but it works, basically we need the species EMP protection
+		to avoid antag IPCs being smoked by EMPs in one hit and the surge protection nanopaste is handled in their specie
+		and we have to call parent to have the signals working properly, hence we add an element to the mob to handle the protection
+		and then we remove it after the EMP is done. Yes this is garbage, but it works
+	*/
+	var/emp_protect_ipc = species.handle_emp_act(src, severity)
+	if(emp_protect_ipc)
+		AddElement(/datum/element/empprotection, emp_protect_ipc)
+
 	. = ..()
 
-	if(species.handle_emp_act(src, severity))
-		return // blocks the EMP
+	if(emp_protect_ipc)
+		RemoveElement(/datum/element/empprotection, emp_protect_ipc)
 
-	for(var/obj/O in src)
-		O.emp_act(severity)
+	if(!(.|emp_protect_ipc & EMP_PROTECT_CONTENTS))
+		for(var/obj/O in src)
+			O.emp_act(severity)
 
 /mob/living/carbon/human/get_attack_victim(obj/item/I, mob/living/user, var/target_zone)
 	if(a_intent != I_HELP)
@@ -430,12 +441,12 @@ emp_act
 		Weaken(3)
 		visible_message(SPAN_WARNING("[src] get knocked over by [H]!"), SPAN_WARNING("You get knocked over by [H]!"))
 
-/mob/living/carbon/human/embed(var/obj/O, var/def_zone=null)
+/mob/living/carbon/human/embed(obj/O, def_zone=null, datum/wound/supplied_wound)
 	if(!def_zone) ..()
 
 	var/obj/item/organ/external/affecting = get_organ(def_zone)
 	if(affecting)
-		affecting.embed(O)
+		affecting.embed(O, supplied_wound = supplied_wound)
 
 
 /mob/living/carbon/human/proc/bloody_hands(var/mob/living/source, var/amount = 2)

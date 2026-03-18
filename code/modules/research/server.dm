@@ -22,6 +22,12 @@
 		/obj/item/stack/cable_coil = 2
 	)
 
+	parts_power_mgmt = FALSE
+
+/obj/machinery/r_n_d/server/upgrade_hints(mob/user, distance, is_adjacent)
+	. += ..()
+	. += "Upgraded <b>scanning modules</b> will reduce active power usage."
+
 /obj/machinery/r_n_d/server/Destroy()
 	for(var/obj/machinery/r_n_d/tech_processor/TP as anything in linked_processors)
 		TP.set_server(null)
@@ -29,6 +35,7 @@
 	return ..()
 
 /obj/machinery/r_n_d/server/RefreshParts()
+	..()
 	var/tot_rating = 0
 
 	for(var/obj/item/stock_parts/SP in component_parts)
@@ -135,8 +142,8 @@
 			env.merge(removed)
 
 /obj/machinery/r_n_d/server/attackby(obj/item/attacking_item, mob/user)
-	if(attacking_item.ismultitool())
-		var/obj/item/device/multitool/MT = attacking_item
+	if(attacking_item.tool_behaviour == TOOL_MULTITOOL)
+		var/obj/item/multitool/MT = attacking_item
 		var/obj/machinery/r_n_d/tech_processor/TP = MT.get_buffer(/obj/machinery/r_n_d/tech_processor)
 		if(TP)
 			TP.set_server(src)
@@ -348,7 +355,7 @@
 			for(var/obj/machinery/r_n_d/server/S in servers)
 				dat += "[S.name] <A href='byond://?src=[REF(src)];send_to=[S.server_id]'> (Transfer)</A><BR>"
 			dat += "<HR><A href='byond://?src=[REF(src)];main=1'>Main Menu</A>"
-	user << browse("<TITLE>R&D Server Control</TITLE><HR>[dat]", "window=server_control;size=575x400")
+	user << browse(HTML_SKELETON_TITLE("R&D Server Control", dat), "window=server_control;size=575x400")
 	onclose(user, "server_control")
 	return
 
@@ -356,7 +363,7 @@
 	if(!emagged)
 		playsound(src.loc, 'sound/effects/sparks4.ogg', 75, 1)
 		emagged = 1
-		to_chat(user, SPAN_NOTICE("You you disable the security protocols."))
+		to_chat(user, SPAN_NOTICE("You disable the security protocols."))
 		src.updateUsrDialog()
 		return 1
 

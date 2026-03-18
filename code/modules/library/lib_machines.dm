@@ -1,11 +1,11 @@
 /* Library Machines
  *
  * Contains:
- *		Borrowbook datum
- *		Library Public Computer
- *		Library Computer
- *		Library Scanner
- *		Book Binder
+ * * Borrowbook datum
+ * * Library Public Computer
+ * * Library Computer
+ * * Library Scanner
+ * * Book Binder
  */
 
 /*
@@ -35,7 +35,7 @@
 
 /obj/machinery/librarypubliccomp/attack_hand(var/mob/user)
 	usr.set_machine(src)
-	var/dat = "<HEAD><TITLE>Library Visitor</TITLE></HEAD><BODY>\n" // <META HTTP-EQUIV='Refresh' CONTENT='10'>
+	var/dat = ""
 	switch(screenstate)
 		if(0)
 			dat += {"<h2>Search Settings</h2><br>
@@ -63,7 +63,7 @@
 					dat += "<tr><td>[author]</td><td>[title]</td><td>[category]</td><td>[id]</td></tr>"
 				dat += "</table><br>"
 			dat += "<a href='byond://?src=[REF(src)];back=1'>\[Go Back\]</a><br>"
-	user << browse(dat, "window=publiclibrary")
+	user << browse(HTML_SKELETON_TITLE("Library Visitor", dat), "window=publiclibrary")
 	onclose(user, "publiclibrary")
 
 /obj/machinery/librarypubliccomp/Topic(href, href_list)
@@ -133,12 +133,7 @@
 
 /obj/machinery/librarycomp/attack_hand(var/mob/user)
 	user.set_machine(src)
-	var/dat
-	// Public Related Code
-	if(!is_public)
-		dat = "<head><title>[SSatlas.current_map.station_name] Library Management</title></head><body>\n"
-	else
-		dat = "<head><title>[SSatlas.current_map.station_name] Library</title></head><body>\n"
+	var/dat = ""
 	switch(screenstate)
 		if(0)
 			// Main Menu
@@ -199,7 +194,7 @@
 			else
 				dat += {"<a href='byond://?src=[REF(src)];orderbyid=1'>(Order Book by ISBN)</a><br><br>
 				<table>
-				<tr><td><a href='byond://?src=[REF(src)];sort=author>AUTHOR</a></td><td><a href='byond://?src=[REF(src)];sort=title>TITLE</a></td><td><a href='byond://?src=[REF(src)];sort=category>CATEGORY</a></td><td></td></tr>"}
+				<tr><td><a href='byond://?src=[REF(src)];sort=author'>AUTHOR</a></td><td><a href='byond://?src=[REF(src)];sort=title'>TITLE</a></td><td><a href='byond://?src=[REF(src)];sort=category'>CATEGORY</a></td><td></td></tr>"}
 				var/DBQuery/query = GLOB.dbcon.NewQuery("SELECT id, author, title, category FROM ss13_library ORDER BY [sortby]")
 				query.Execute()
 
@@ -238,7 +233,7 @@
 			<a href='byond://?src=[REF(src)];switchscreen=0'>No.</a><br>"}
 
 	//dat += "<a href='byond://?src=[REF(user)];mach_close=library'>Close</a><br><br>"
-	user << browse(dat, "window=library")
+	user << browse(HTML_SKELETON_TITLE(is_public ? "[SSatlas.current_map.station_name] Library" : "[SSatlas.current_map.station_name] Library Management", dat), "window=library")
 	onclose(user, "library")
 
 /obj/machinery/librarycomp/emag_act(var/remaining_charges, var/mob/user)
@@ -418,7 +413,7 @@
 			to_chat(user, SPAN_WARNING("\The [src] must be secured to the floor first!"))
 			return
 		user.drop_from_inventory(attacking_item,src)
-	if(attacking_item.iswrench())
+	if(attacking_item.tool_behaviour == TOOL_WRENCH)
 		attacking_item.play_tool_sound(get_turf(src), 75)
 		if(anchored)
 			user.visible_message(SPAN_NOTICE("\The [user] unsecures \the [src] from the floor."),
@@ -432,7 +427,7 @@
 
 /obj/machinery/libraryscanner/attack_hand(var/mob/user)
 	usr.set_machine(src)
-	var/dat = "<HEAD><TITLE>Scanner Control Interface</TITLE></HEAD><BODY>\n" // <META HTTP-EQUIV='Refresh' CONTENT='10'>
+	var/dat = ""
 	if(cache)
 		dat += "<FONT color=#005500>Data stored in memory.</FONT><br>"
 	else
@@ -442,7 +437,7 @@
 		dat += "       <a href='byond://?src=[REF(src)];clear=1'>\[Clear Memory\]</a><br><br><a href='byond://?src=[REF(src)];eject=1'>\[Remove Book\]</a>"
 	else
 		dat += "<br>"
-	user << browse(dat, "window=scanner")
+	user << browse(HTML_SKELETON_TITLE("Scanner Control Interface", dat), "window=scanner")
 	onclose(user, "scanner")
 
 /obj/machinery/libraryscanner/Topic(href, href_list)
@@ -453,7 +448,7 @@
 
 	if(href_list["scan"])
 		flick(insert_anim, src)
-		playsound(loc, 'sound/bureaucracy/scan.ogg', 75, 1)
+		playsound(loc, 'sound/items/bureaucracy/scan.ogg', 75, 1)
 		for(var/obj/item/book/B in contents)
 			cache = B
 			break
@@ -491,7 +486,7 @@
 		user.drop_from_inventory(paper,src)
 		user.visible_message(SPAN_NOTICE("\The [user] loads some paper into \the [src]."), SPAN_NOTICE("You load some paper into \the [src]."))
 		visible_message(SPAN_NOTICE("\The [src] begins to hum as it warms up its printing drums."))
-		playsound(T, 'sound/bureaucracy/binder.ogg', 75, 1)
+		playsound(T, 'sound/items/bureaucracy/binder.ogg', 75, 1)
 		binding = TRUE
 		sleep(rand(200,400))
 		binding = FALSE
@@ -500,15 +495,16 @@
 			paper.forceMove(T)
 			return
 		visible_message(SPAN_NOTICE("\The [src] whirs as it prints and binds a new book."))
-		playsound(T, 'sound/bureaucracy/print.ogg', 75, 1)
+		playsound(T, 'sound/items/bureaucracy/print.ogg', 75, 1)
 		var/obj/item/book/b = new(T)
 		b.dat = paper.info
 		b.name = "blank book"
 		b.icon_state = "book[rand(1,7)]"
+		b.item_state = icon_state
 		qdel(paper)
 		return
 
-	if(attacking_item.iswrench())
+	if(attacking_item.tool_behaviour == TOOL_WRENCH)
 		attacking_item.play_tool_sound(get_turf(src), 75)
 		if(anchored)
 			user.visible_message(SPAN_NOTICE("\The [user] unsecures \the [src] from the floor."), \
