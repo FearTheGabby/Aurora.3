@@ -367,12 +367,19 @@ ABSTRACT_TYPE(/datum/gear/ears/vaurca)
 	flags = GEAR_HAS_DESC_SELECTION
 
 /datum/gear/head/vaurca_gyne_shroud
-	display_name = "colorable gyne shroud"
+	display_name = "colorable gyne shroud selection"
 	path = /obj/item/clothing/head/vaurca_breeder/colorable
 	cost = 1
 	whitelisted = list(SPECIES_VAURCA_BREEDER)
 	sort_category = "Xenowear - Vaurca"
-	flags = GEAR_HAS_NAME_SELECTION | GEAR_HAS_DESC_SELECTION | GEAR_HAS_COLOR_SELECTION
+	flags = GEAR_HAS_NAME_SELECTION | GEAR_HAS_DESC_SELECTION | GEAR_HAS_COLOR_SELECTION | GEAR_HAS_ACCENT_COLOR_SELECTION
+
+/datum/gear/head/vaurca_gyne_shroud/New()
+	..()
+	var/list/shrouds = list()
+	shrouds["colorable gyne shroud"] = /obj/item/clothing/head/vaurca_breeder/colorable
+	shrouds["colorable gyne shroud, flag"] = /obj/item/clothing/head/vaurca_breeder/colorable/flag
+	gear_tweaks += new /datum/gear_tweak/path(shrouds)
 
 /datum/gear/head/vaurca_gyne_clothes
 	display_name = "colorable gyne clothes"
